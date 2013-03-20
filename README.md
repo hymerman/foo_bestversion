@@ -21,8 +21,14 @@ Fairly straightforward!
 Right click -> Best Version -> Replace with best version of track
 Right click -> Last.fm -> XXX's top tracks
 
-Links
-=====
+Download
+========
+
+The latest built version is available here:
+http://files.benhymers.com/foo_bestversion/foo_bestversion.fb2k-component
+
+Other Useful Links
+==================
 
 Discussion thread:
 http://www.hydrogenaudio.org/forums/index.php?showtopic=100019
