@@ -1,0 +1,146 @@
+#include "LastFm.h"
+
+#include "rapidjson/rapidjson.h"
+#include "rapidjson/document.h"
+
+#include "Component.h"
+#include "FoobarSDKWrapper.h"
+#include "ToString.h"
+
+#include <string>
+
+namespace {
+
+char to_hex(const char c)
+{
+	return c < 0xa ? '0' + c : 'a' - 0xa + c;
+}
+
+std::string url_encode(const std::string& in)
+{
+	std::string out;
+	out.reserve(in.length());
+
+	for(auto c : in)
+	{
+		if (isalnum(c))
+		{
+			out.push_back(c);
+		}
+		else if (isspace(c))
+		{
+			out.push_back('+');
+		}
+		else
+		{
+			out.push_back('%');
+			out.push_back(to_hex(c >> 4));
+			out.push_back(to_hex(c % 16));
+		}
+	}
+
+	return out;
+}
+
+}
+
+namespace lastfmgrabber {
+
+ArtistChart getArtistChart(const std::string& artist, const std::function<void (const std::string&)>& log, foobar2000_io::abort_callback& callback)
+{
+	ArtistChart artistChart;
+
+	const std::string apiKey = "6fcd59047568e89b1615975081258990";
+	const size_t limit = 100;
+
+	const std::string uri = std::string("http://ws.audioscrobbler.com/2.0?format=json")
+		+ "&api_key=" + apiKey
+		+ "&method=artist.getTopTracks"
+		+ "&limit=" + to_string(limit)
+		+ "&artist=" + url_encode(artist);
+
+	log("Creating client");
+
+	static_api_ptr_t<http_client> http;
+
+	auto request = http->create_request("GET");
+	request->add_header("User-Agent", COMPONENT_NAME "/" COMPONENT_VERSION);
+
+	auto response = request->run_ex(uri.c_str(), callback);
+
+	pfc::string8 buffer;
+	response->read_string_raw(buffer, callback);
+
+	if(buffer.is_empty())
+	{
+		throw std::exception("No content returned from last.fm. Perhaps last.fm is currently down?");
+	}
+
+	// Take a copy of the string as a vector of chars
+	std::vector<char> json(buffer.get_ptr(), buffer.get_ptr() + buffer.get_length());
+	json.push_back('\0');
+
+	rapidjson::Document document;
+	if (document.Parse<0>(&json[0]).HasParseError())
+	{
+		throw std::exception("Parse error in json");
+	}
+
+	if(!document.IsObject())
+	{
+		throw std::exception("json document must be an object");
+	}
+
+	const auto& topTracks = document["toptracks"];
+
+	if(!topTracks.IsObject())
+	{
+		throw std::exception("toptracks json value is not an object; last.fm data format not as expected!");
+	}
+
+	const auto& tracks = topTracks["track"];
+
+	if(!tracks.IsArray())
+	{
+		throw std::exception("tracks json value is not an array; last.fm data format not as expected!");
+	}
+
+	log("Found " + to_string(tracks.Size()) + " tracks");
+
+	// Iterate over all tracks.
+	for(rapidjson::SizeType i = 0; i < tracks.Size(); ++i)
+	{
+		const auto& track = tracks[i];
+
+		if(!track.IsObject())
+		{
+			throw std::exception("tracks json array element is not an object; last.fm data format not as expected!");
+		}
+
+		const auto& nameValue = track["name"];
+		const auto& mbidValue = track["mbid"];
+		const auto& playCountValue = track["playcount"];
+
+		if(!nameValue.IsString() || !mbidValue.IsString() || !playCountValue.IsString())
+		{
+			throw std::exception("name, mbid or playcount values on a track are not strings; last.fm data format not as expected!");
+		}
+
+		// Extract a string name, mbid and reach from the track.
+		const std::string name = track["name"].GetString();
+		const std::string mbid = track["mbid"].GetString();
+		const std::string playCountAsString = track["playcount"].GetString();
+
+		// Parse the reach string as an integer.
+		const unsigned long playCount = from_string<unsigned long>(playCountAsString);
+
+		log("track: " + name + ", " + mbid + ", " + to_string(playCount));
+
+		// Add the result to our map.
+		artistChart.push_back(std::make_pair(playCount, name));
+	}
+
+	return artistChart;
+}
+
+} // namespace lastfmgrabber
