@@ -20,3 +20,12 @@ Fairly straightforward!
 
 Right click -> Best Version -> Replace with best version of track
 Right click -> Last.fm -> XXX's top tracks
+
+Links
+=====
+
+Discussion thread:
+http://www.hydrogenaudio.org/forums/index.php?showtopic=100019
+
+Github page:
+https://github.com/hymerman/foo_bestversion
