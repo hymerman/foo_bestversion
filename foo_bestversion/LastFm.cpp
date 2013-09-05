@@ -1,7 +1,6 @@
 #include "LastFm.h"
 
-#include "rapidjson/rapidjson.h"
-#include "rapidjson/document.h"
+#include "RapidJsonWrapper.h"
 
 #include "Component.h"
 #include "FoobarSDKWrapper.h"

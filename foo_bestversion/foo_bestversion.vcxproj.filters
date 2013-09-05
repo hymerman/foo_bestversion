@@ -19,6 +19,7 @@
     <ClInclude Include="DatabaseScopeLock.h" />
     <ClInclude Include="PlaylistGenerator.h" />
     <ClInclude Include="ToString.h" />
+    <ClInclude Include="RapidJsonWrapper.h" />
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="Resource.rc" />

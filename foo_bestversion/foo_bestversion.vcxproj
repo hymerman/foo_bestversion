@@ -118,6 +118,7 @@
     <ClInclude Include="LastFm.h" />
     <ClInclude Include="Maths.h" />
     <ClInclude Include="PlaylistGenerator.h" />
+    <ClInclude Include="RapidJsonWrapper.h" />
     <ClInclude Include="resource.h" />
     <ClInclude Include="ToString.h" />
   </ItemGroup>
