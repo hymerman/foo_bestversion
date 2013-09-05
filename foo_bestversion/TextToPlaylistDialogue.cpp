@@ -5,6 +5,7 @@
 #include "DatabaseScopeLock.h"
 #include "resource.h"
 #include "ToString.h"
+#include "PlaylistGenerator.h"
 
 #include <memory>
 #include <regex>
@@ -14,7 +15,10 @@ namespace bestversion
 
 class TextToPlaylistDialogue : public CDialogImpl<TextToPlaylistDialogue> {
 public:
-	TextToPlaylistDialogue() : CDialogImpl<TextToPlaylistDialogue>() {}
+	TextToPlaylistDialogue()
+		: CDialogImpl<TextToPlaylistDialogue>()
+		, m_best_versions()
+	{}
 
 	enum { IDD = IDD_TEXT_TO_PLAYLIST_DIALOGUE };
 
@@ -54,7 +58,16 @@ private:
 		handle_input_text_changed();
 	}
 
-	void OnOk(UINT, int, CWindow) {
+	void OnOk(UINT, int, CWindow)
+	{
+		if(!m_best_versions.empty())
+		{
+			// todo: allow user to name playlist.
+			// Remove non-existent tracks then create a playlist containing them.
+			m_best_versions.erase(std::remove_if(std::begin(m_best_versions), std::end(m_best_versions), [](const metadb_handle_ptr& ptr){ return ptr == 0; }), std::end(m_best_versions));
+			generatePlaylistFromTracks(m_best_versions);
+		}
+
 		DestroyWindow();
 	}
 
@@ -159,7 +172,8 @@ private:
 		}
 
 		// Create another vector to hold the actual best track results.
-		std::vector<metadb_handle_ptr> best_versions(results.size());
+		m_best_versions.clear();
+		m_best_versions.resize(results.size());
 
 		pfc::list_t<metadb_handle_ptr> library;
 		static_api_ptr_t<library_manager> lm;
@@ -185,7 +199,7 @@ private:
 			// Pick the best version of all these tracks and add it to the list if found.
 			metadb_handle_ptr track = getBestTrackByTitle(match.second, possible_tracks);
 
-			best_versions[match_index] = track;
+			m_best_versions[match_index] = track;
 		}
 
 		pfc::string8 text_output;
@@ -199,9 +213,9 @@ private:
 			else
 			{
 				text_output += pfc::string8((match.first + " : " + match.second + " : ").c_str());
-				if(best_versions[match_index] != 0)
+				if(m_best_versions[match_index] != 0)
 				{
-					text_output += best_versions[match_index]->get_path();
+					text_output += m_best_versions[match_index]->get_path();
 				}
 				else
 				{
@@ -215,6 +229,8 @@ private:
 		console::print(text_output);
 		uSetDlgItemText(*this, IDC_OUTPUT_TEXT, text_output);
 	}
+
+	std::vector<metadb_handle_ptr> m_best_versions;
 };
 
 void showTextToPlaylistDialogue()

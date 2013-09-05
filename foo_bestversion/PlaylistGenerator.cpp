@@ -13,6 +13,19 @@ void generatePlaylistFromTracks(const pfc::list_t<metadb_handle_ptr>& tracks)
 
 //------------------------------------------------------------------------------
 
+void generatePlaylistFromTracks(const std::vector<metadb_handle_ptr>& tracks)
+{
+	pfc::list_t<metadb_handle_ptr> list;
+	list.prealloc(tracks.size());
+	for(const auto& track : tracks)
+	{
+		list.add_item(track);
+	}
+	generatePlaylistFromTracks(list);
+}
+
+//------------------------------------------------------------------------------
+
 void generatePlaylistFromTracks(const pfc::list_t<metadb_handle_ptr>& tracks, const std::string& playlistName)
 {
 	static_api_ptr_t<playlist_manager> pm;
@@ -35,6 +48,19 @@ void generatePlaylistFromTracks(const pfc::list_t<metadb_handle_ptr>& tracks, co
 	pm->playlist_add_items(playlist, tracks, bit_array_true());
 	pm->set_active_playlist(playlist);
 	pm->set_playing_playlist(playlist);
+}
+
+//------------------------------------------------------------------------------
+
+void generatePlaylistFromTracks(const std::vector<metadb_handle_ptr>& tracks, const std::string& playlistName)
+{
+	pfc::list_t<metadb_handle_ptr> list;
+	list.prealloc(tracks.size());
+	for(const auto& track : tracks)
+	{
+		list.add_item(track);
+	}
+	generatePlaylistFromTracks(list, playlistName);
 }
 
 //------------------------------------------------------------------------------
