@@ -64,6 +64,14 @@ inline bool isTrackByArtist(const std::string& artist, const metadb_handle_ptr& 
 				return true;
 			}
 		}
+
+		for(t_size j = 0; j < fileInfo->meta_get_count_by_name("album artist"); j++)
+		{
+			if(stricmp_utf8(fileInfo->meta_get("album artist", j), artist.c_str()) == 0)
+			{
+				return true;
+			}
+		}
 	}
 
 	return false;
