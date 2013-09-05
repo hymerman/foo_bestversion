@@ -986,6 +986,18 @@ namespace pfc {
 			str = next + 1;
 		}
 	}
+	template<typename t_func> void splitStringByLinesFunc(const t_func & func, const char * str) {
+		for(;;) {
+			const char * next = strchr(str, '\n');
+			if (next == NULL) {
+				func(string_part(str, strlen(str))); break;
+			}
+			const char * walk = next;
+			while(walk > str && walk[-1] == '\r') --walk;
+			func(string_part(str, walk - str));
+			str = next + 1;
+		}
+	}
 	template<typename t_out> void splitStringByChar(t_out & out, const char * str, char c) {
 		for(;;) {
 			const char * next = strchr(str, c);

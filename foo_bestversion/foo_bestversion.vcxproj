@@ -103,12 +103,15 @@
     <ClCompile Include="Component.cpp" />
     <ClCompile Include="ContextMenu.cpp" />
     <ClCompile Include="LastFm.cpp" />
+    <ClCompile Include="MainMenu.cpp" />
     <ClCompile Include="PlaylistGenerator.cpp" />
+    <ClCompile Include="TextToPlaylistDialogue.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="Resource.rc" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="ATLHelpersWrapper.h" />
     <ClInclude Include="BestVersion.h" />
     <ClInclude Include="Component.h" />
     <ClInclude Include="ContextMenu.h" />
@@ -118,6 +121,7 @@
     <ClInclude Include="PlaylistGenerator.h" />
     <ClInclude Include="RapidJsonWrapper.h" />
     <ClInclude Include="resource.h" />
+    <ClInclude Include="TextToPlaylistDialogue.h" />
     <ClInclude Include="ToString.h" />
   </ItemGroup>
   <ItemGroup>
