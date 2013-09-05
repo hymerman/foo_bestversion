@@ -196,8 +196,13 @@ private:
 			}
 
 			// Create a copy of the library with only tracks by this aritist with a similar title.
+			// Don't filter on Various Artists though - that's not a proper artist :)
 			pfc::list_t<metadb_handle_ptr> possible_tracks = library;
-			filterTracksByArtist(match.first, possible_tracks);
+			if(match.first != "Various Artists")
+			{
+				filterTracksByArtist(match.first, possible_tracks);
+			}
+
 			filterTracksByCloseTitle(match.second, possible_tracks);
 
 			// Pick the best version of all these tracks and add it to the list if found.
