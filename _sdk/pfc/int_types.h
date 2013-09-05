@@ -78,7 +78,8 @@ inline t_size MulDiv_Size(t_size x,t_size y,t_size z) {return (x*y)/z;}
 #error portme
 #endif
 
-#define pfc_infinite (~0)
+//#define pfc_infinite (~0)
+static const t_size pfc_infinite = static_cast<t_size>(~0);
 
 namespace pfc {
 	const t_uint16 infinite16 = (t_uint16)(~0);
