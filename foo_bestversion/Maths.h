@@ -1,6 +1,6 @@
 #pragma once
 
-namespace lastfmgrabber {
+namespace bestversion {
 namespace maths {
 
 //------------------------------------------------------------------------------
@@ -72,4 +72,4 @@ mapToUnary(
 //------------------------------------------------------------------------------
 
 } // namespace maths
-} // namespace lastfmgrabber
+} // namespace bestversion

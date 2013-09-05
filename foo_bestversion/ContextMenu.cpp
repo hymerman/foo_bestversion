@@ -9,7 +9,7 @@
 
 #include <map>
 
-using namespace lastfmgrabber;
+using namespace bestversion;
 
 namespace {
 
@@ -30,7 +30,7 @@ void replaceWithBestVersion(const pfc::list_base_const_t<metadb_handle_ptr>& tra
 
 } // anonymous namespace
 
-namespace lastfmgrabber {
+namespace bestversion {
 
 class LastFmGrabberContextMenu : public contextmenu_item_simple
 {
@@ -349,7 +349,7 @@ static contextmenu_item_factory_t<BestVersionContextMenu> bestVersionContextMenu
 
 //------------------------------------------------------------------------------
 
-} // namespace lastfmgrabber
+} // namespace bestversion
 
 //------------------------------------------------------------------------------
 
@@ -388,7 +388,7 @@ public:
 			p_status.set_progress_float(0.0f);
 			p_status.force_update();
 
-			const lastfmgrabber::ArtistChart trackList = lastfmgrabber::getArtistChart(
+			const bestversion::ArtistChart trackList = bestversion::getArtistChart(
 				artist,
 				[](const std::string& message){ console::print(message.c_str()); },
 				p_abort

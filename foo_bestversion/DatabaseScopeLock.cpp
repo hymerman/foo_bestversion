@@ -1,6 +1,6 @@
 #include "DatabaseScopeLock.h"
 
-namespace lastfmgrabber {
+namespace bestversion {
 
 //------------------------------------------------------------------------------
 
@@ -19,4 +19,4 @@ DatabaseScopeLock::~DatabaseScopeLock()
 
 //------------------------------------------------------------------------------
 
-} // namespace lastfmgrabber
+} // namespace bestversion

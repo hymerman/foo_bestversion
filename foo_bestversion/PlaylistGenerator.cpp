@@ -2,7 +2,7 @@
 
 #include "FoobarSDKWrapper.h"
 
-namespace lastfmgrabber {
+namespace bestversion {
 
 //------------------------------------------------------------------------------
 
@@ -57,4 +57,4 @@ void replaceTrackInActivePlaylist(const metadb_handle_ptr& trackToReplace, const
 
 //------------------------------------------------------------------------------
 
-} // namespace lastfmgrabber
+} // namespace bestversion

@@ -2,7 +2,7 @@
 
 #include "FoobarSDKWrapper.h"
 
-namespace lastfmgrabber {
+namespace bestversion {
 
 class DatabaseScopeLock
 {
@@ -18,4 +18,4 @@ private:
 	static_api_ptr_t<metadb> db;
 };
 
-} // namespace lastfmgrabber
+} // namespace bestversion

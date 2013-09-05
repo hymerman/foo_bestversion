@@ -4,7 +4,7 @@
 
 #include <string>
 
-namespace lastfmgrabber {
+namespace bestversion {
 
 // database has to be locked before calling this function
 std::string getMainArtist(metadb_handle_list_cref tracks);
@@ -30,4 +30,4 @@ float calculateTrackRating(const std::string& title, const metadb_handle_ptr& tr
 // all tracks will be analysed; try to cut the size of the list down before calling.
 metadb_handle_ptr getBestTrackByTitle(const std::string& title, const pfc::list_base_t<metadb_handle_ptr>& tracks);
 
-} // namespace lastfmgrabber
+} // namespace bestversion

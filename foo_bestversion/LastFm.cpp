@@ -44,7 +44,7 @@ std::string url_encode(const std::string& in)
 
 }
 
-namespace lastfmgrabber {
+namespace bestversion {
 
 ArtistChart getArtistChart(const std::string& artist, const std::function<void (const std::string&)>& log, foobar2000_io::abort_callback& callback)
 {
@@ -143,4 +143,4 @@ ArtistChart getArtistChart(const std::string& artist, const std::function<void (
 	return artistChart;
 }
 
-} // namespace lastfmgrabber
+} // namespace bestversion

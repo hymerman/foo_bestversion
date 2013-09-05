@@ -7,7 +7,7 @@
 #include <limits>
 #include <map>
 
-namespace lastfmgrabber {
+namespace bestversion {
 
 //------------------------------------------------------------------------------
 
@@ -318,4 +318,4 @@ metadb_handle_ptr getBestTrackByTitle(const std::string& title, const pfc::list_
 
 //------------------------------------------------------------------------------
 
-} // namespace lastfmgrabber
+} // namespace bestversion
