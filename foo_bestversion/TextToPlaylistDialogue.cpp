@@ -36,7 +36,7 @@ private:
 
 	BOOL OnInitDialog(CWindow, LPARAM)
 	{
-		SetDlgItemText(IDC_REGEX_TEXT,	_T("[^/]*/([^/]+)/[^/]+/(?:[^/]+/)?[\\d\\s-]*([^/]+)\\.(?:mp3|flac|ogg)"));
+		SetDlgItemText(IDC_REGEX_TEXT,	_T("[^/]*/([^/]+)/[^/]+/(?:[^/]+/)?\\d*\\s*-\\s*([^/]+)\\.(?:mp3|flac|ogg)"));
 		SetDlgItemText(IDC_ARTIST_INDEX_TEXT, _T("0"));
 		SetDlgItemText(IDC_TITLE_INDEX_TEXT, _T("1"));
 		ShowWindowCentered(*this, GetParent()); // Function declared in SDK helpers.
