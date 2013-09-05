@@ -77,11 +77,13 @@ private:
 
 	void handle_regex_changed()
 	{
+		// todo: delay regeneration.
 		handle_input_text_changed();
 	}
 
 	void handle_input_text_changed()
 	{
+		// todo: do this all asynchronously with a nice progress bar or something.
 		console::print("starting matching");
 		uSetDlgItemText(*this, IDC_STATUS_TEXT, "");
 		uSetDlgItemText(*this, IDC_OUTPUT_TEXT, "");
@@ -124,7 +126,7 @@ private:
 		}
 		catch(std::regex_error& e)
 		{
-			// Todo: issue more information.
+			// todo: issue more information.
 			const std::string error_message = std::string("Regex error: ") + e.what();
 			console::print(error_message.c_str());
 			uSetDlgItemText(*this, IDC_STATUS_TEXT, error_message.c_str());
