@@ -129,10 +129,10 @@ void filterTracksByCloseTitle(const std::string& title, pfc::list_base_t<metadb_
 
 bool fileTitlesMatchExcludingBracketsOnLhs(const std::string& lhs, const std::string& rhs)
 {
-	int lhsBracketPos = strcspn(lhs.c_str(),"([");
+	auto lhsBracketPos = strcspn(lhs.c_str(),"([");
 	if(lhsBracketPos != pfc_infinite)
 	{
-		if((stricmp_utf8_ex(lhs.c_str(), lhsBracketPos - 1, rhs.c_str(), pfc_infinite) == 0)
+		if((stricmp_utf8_ex(lhs.c_str(), lhsBracketPos - 1u, rhs.c_str(), pfc_infinite) == 0)
 			|| (stricmp_utf8_ex(lhs.c_str(), lhsBracketPos, rhs.c_str(), pfc_infinite) == 0))
 		{
 			return true;

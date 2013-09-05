@@ -81,7 +81,7 @@ public:
 	context_command(
 		unsigned int			index,
 		metadb_handle_list_cref	tracks,
-		const GUID&				caller
+		const GUID&				/*caller*/
 	)
 	{
 		switch(index)
@@ -104,8 +104,8 @@ public:
 		unsigned int			index,
 		metadb_handle_list_cref	tracks,
 		pfc::string_base&		out,
-		unsigned int&			displayflags,
-		const GUID&				caller
+		unsigned int&			/*displayflags*/,
+		const GUID&				/*caller*/
 	)
 	{
 		switch(index)
@@ -249,7 +249,7 @@ public:
 	context_command(
 		unsigned int			index,
 		metadb_handle_list_cref	tracks,
-		const GUID&				caller
+		const GUID&				/*caller*/
 	)
 	{
 		switch(index)
@@ -272,8 +272,8 @@ public:
 		unsigned int			index,
 		metadb_handle_list_cref	tracks,
 		pfc::string_base&		out,
-		unsigned int&			displayflags,
-		const GUID&				caller
+		unsigned int&			/*displayflags*/,
+		const GUID&				/*caller*/
 	)
 	{
 		switch(index)
@@ -372,7 +372,7 @@ public:
 	{
 	}
 
-	virtual void on_init(HWND p_wnd)
+	virtual void on_init(HWND /*p_wnd*/)
 	{
 		static_api_ptr_t<library_manager> lm;
 		lm->get_all_items(library);
@@ -436,7 +436,7 @@ public:
 		}
 	}
 
-	virtual void on_done(HWND p_wnd, bool p_was_aborted)
+	virtual void on_done(HWND /*p_wnd*/, bool /*p_was_aborted*/)
 	{
 		if (!success)
 		{
