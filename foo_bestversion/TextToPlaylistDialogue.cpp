@@ -83,6 +83,8 @@ private:
 	void handle_input_text_changed()
 	{
 		console::print("starting matching");
+		uSetDlgItemText(*this, IDC_STATUS_TEXT, "");
+		uSetDlgItemText(*this, IDC_OUTPUT_TEXT, "");
 
 		pfc::string8 regex_string;
 		uGetDlgItemText(*this, IDC_REGEX_TEXT, regex_string);
@@ -99,7 +101,7 @@ private:
 		{
 			const std::string error_message = std::string("Artist index is invalid (") + artist_index_string.get_ptr() + ").";
 			console::print(error_message.c_str());
-			uSetDlgItemText(*this, IDC_OUTPUT_TEXT, error_message.c_str());
+			uSetDlgItemText(*this, IDC_STATUS_TEXT, error_message.c_str());
 			return;
 		}
 
@@ -107,7 +109,7 @@ private:
 		{
 			const std::string error_message = std::string("Title index is invalid (") + title_index_string.get_ptr() + ").";
 			console::print(error_message.c_str());
-			uSetDlgItemText(*this, IDC_OUTPUT_TEXT, error_message.c_str());
+			uSetDlgItemText(*this, IDC_STATUS_TEXT, error_message.c_str());
 			return;
 		}
 
@@ -125,7 +127,7 @@ private:
 			// Todo: issue more information.
 			const std::string error_message = std::string("Regex error: ") + e.what();
 			console::print(error_message.c_str());
-			uSetDlgItemText(*this, IDC_OUTPUT_TEXT, error_message.c_str());
+			uSetDlgItemText(*this, IDC_STATUS_TEXT, error_message.c_str());
 			return;
 		}
 
@@ -202,6 +204,8 @@ private:
 			m_best_versions[match_index] = track;
 		}
 
+		size_t num_regex_matched = 0;
+		size_t num_found_in_library = 0;
 		pfc::string8 text_output;
 		for(size_t match_index = 0; match_index < results.size(); ++match_index)
 		{
@@ -212,9 +216,11 @@ private:
 			}
 			else
 			{
+				++num_regex_matched;
 				text_output += pfc::string8((match.first + " : " + match.second + " : ").c_str());
 				if(m_best_versions[match_index] != 0)
 				{
+					++num_found_in_library;
 					text_output += m_best_versions[match_index]->get_path();
 				}
 				else
@@ -228,6 +234,9 @@ private:
 		console::print("complete");
 		console::print(text_output);
 		uSetDlgItemText(*this, IDC_OUTPUT_TEXT, text_output);
+
+		std::string status_text = to_string(num_regex_matched) + "/" + to_string(results.size()) + " regex matches, " + to_string(num_found_in_library) + "/" + to_string(results.size()) + " found in library.";
+		uSetDlgItemText(*this, IDC_STATUS_TEXT, status_text.c_str());
 	}
 
 	std::vector<metadb_handle_ptr> m_best_versions;
