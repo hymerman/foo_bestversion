@@ -490,18 +490,25 @@ void replaceWithBestVersion(const metadb_handle_ptr& track)
 		return;
 	}
 
-	if(!fileInfo->meta_exists("artist") || !fileInfo->meta_exists("title"))
+	if(!fileInfo->meta_exists("title"))
 	{
-		console::printf("File is missing artist or track tag %s", track->get_path());
+		console::printf("File is missing track tag: %s", track->get_path());
 		return;
 	}
 
-	const std::string artist = fileInfo->meta_get("artist", 0);
+	const bool has_artist_tag = fileInfo->meta_exists("artist");
+	if(!has_artist_tag && !fileInfo->meta_exists("title"))
+	{
+		console::printf("File is missing artist and album artist tags: %s", track->get_path());
+		return;
+	}
+
+	const std::string artist = has_artist_tag ? fileInfo->meta_get("artist", 0) : fileInfo->meta_get("album artist", 0);
 	const std::string title = fileInfo->meta_get("title", 0);
 
 	if(artist == "" || title == "")
 	{
-		console::printf("File has empty artist or track tag %s", track->get_path());
+		console::printf("File has empty artist or track tag: %s", track->get_path());
 		return;
 	}
 
