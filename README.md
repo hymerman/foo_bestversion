@@ -25,9 +25,11 @@ Right click -> Last.fm -> XXX's top tracks
 Download
 ========
 
-The latest built version is available here:
+Built versions will be available here:
 
-http://files.benhymers.com/foo_bestversion/foo_bestversion.fb2k-component
+https://github.com/hymerman/foo_bestversion/releases
+
+Pdb files are also provided in case you fancy debugging releases yourself.
 
 Other Useful Links
 ==================
