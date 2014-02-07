@@ -290,11 +290,11 @@ metadb_handle_ptr getBestTrackByTitle(const std::string& title, const pfc::list_
 {
 	if(tracks.get_count() == 1)
 	{
-		console::printf(("Only one version of " + title + " exists in library").c_str());
+		console::info(("Only one version of " + title + " exists in library").c_str());
 		return tracks[0];
 	}
 
-	console::printf(("Finding best version of " + title + ". " + to_string(tracks.get_count()) + " candidates").c_str());
+	console::info(("Finding best version of " + title + ". " + to_string(tracks.get_count()) + " candidates").c_str());
 
 	metadb_handle_ptr bestTrack = 0;
 	float bestTrackRating = std::numeric_limits<float>::min();
@@ -303,7 +303,7 @@ metadb_handle_ptr getBestTrackByTitle(const std::string& title, const pfc::list_
 	{
 		const float trackRating = calculateTrackRating(title, tracks[index]);
 
-		console::printf(("Rating: " + to_string(trackRating, 2) + ": " + tracks[index]->get_path()).c_str());
+		console::info(("Rating: " + to_string(trackRating, 2) + ": " + tracks[index]->get_path()).c_str());
 
 		if(trackRating >= 0.0f && trackRating > bestTrackRating)
 		{
@@ -314,11 +314,11 @@ metadb_handle_ptr getBestTrackByTitle(const std::string& title, const pfc::list_
 
 	if(bestTrack == 0)
 	{
-		console::printf(("Couldn't find a match for " + title).c_str());
+		console::info(("Couldn't find a match for " + title).c_str());
 	}
 	else
 	{
-		console::printf(("Picked track with rating: " + to_string(bestTrackRating, 2) + ": " + bestTrack->get_path()).c_str());
+		console::info(("Picked track with rating: " + to_string(bestTrackRating, 2) + ": " + bestTrack->get_path()).c_str());
 	}
 
 	return bestTrack;
