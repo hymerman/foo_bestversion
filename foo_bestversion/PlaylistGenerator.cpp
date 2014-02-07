@@ -47,11 +47,15 @@ void replaceTrackInActivePlaylist(const metadb_handle_ptr& trackToReplace, const
 	if(!pm->activeplaylist_find_item(trackToReplace, index))
 	{
 		console::printf("Couldn't find track in active playlist to replace it: %s", trackToReplace->get_path());
+		return;
 	}
+
+	pm->activeplaylist_undo_backup();
 
 	if(!pm->activeplaylist_replace_item(index, replacement))
 	{
 		console::printf("Couldn't replace track in active playlist: %s", trackToReplace->get_path());
+		return;
 	}
 }
 
