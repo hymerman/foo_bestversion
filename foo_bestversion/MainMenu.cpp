@@ -34,7 +34,7 @@ public:
 	}
 	bool get_description(t_uint32 p_index,pfc::string_base & p_out) {
 		switch(p_index) {
-			case cmd_text_to_playlist_dialogue: p_out = "Generates a platlist from multiline text input."; return true;
+			case cmd_text_to_playlist_dialogue: p_out = "Generates a playlist from multiline text input."; return true;
 			default: uBugCheck(); // should never happen unless somebody called us with invalid parameters - bail
 		}
 	}
