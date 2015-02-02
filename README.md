@@ -1,3 +1,5 @@
+[![Appveyor Build status](https://ci.appveyor.com/api/projects/status/dkl49xt1j7y78km4/branch/master?svg=true)](https://ci.appveyor.com/project/hymerman/foo-bestversion/branch/master)
+
 foo_bestversion
 ===============
 
