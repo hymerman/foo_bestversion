@@ -1,5 +1,7 @@
 #include "stdafx.h"
 
+#ifdef _WIN32
+
 static bool g_is_enabled()
 {
 	return standard_config_objects::query_remember_window_positions();
@@ -211,3 +213,4 @@ void cfg_window_size::set_data_raw(stream_reader * p_stream,t_size p_sizehint,ab
 
 	m_width = width; m_height = height;
 }
+#endif // _WIN32

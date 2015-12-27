@@ -100,7 +100,36 @@ private:
 };
 }
 #else 
-//PORTME
+
+namespace pfc {
+    
+class hires_timer {
+public:
+    void start();
+    double query() const;
+    double query_reset();
+	pfc::string8 queryString(unsigned precision = 3);
+private:
+    double m_start;
+};
+
+typedef hires_timer lores_timer;
+
+}
+
 #endif
+
+#ifndef _WIN32
+struct timespec;
+#endif
+
+namespace pfc {
+	uint64_t fileTimeWtoU(uint64_t ft);
+	uint64_t fileTimeUtoW(uint64_t ft);
+#ifndef _WIN32
+    uint64_t fileTimeUtoW( timespec const & ts );
+#endif
+	uint64_t fileTimeNow();
+}
 
 #endif

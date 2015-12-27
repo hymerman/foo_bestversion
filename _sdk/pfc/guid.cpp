@@ -50,7 +50,7 @@ namespace {
 		return (read_word(ptr)<<16) | read_word(ptr+4);
 	}
 
-	void _GUID_from_text::read_bytes(BYTE * out,unsigned num,const char * ptr)
+	void _GUID_from_text::read_bytes(uint8_t * out,unsigned num,const char * ptr)
 	{
 		for(;num;num--)
 		{
@@ -153,9 +153,20 @@ void print_hex_raw(const void * buffer,unsigned bytes,char * p_out)
 	for(n=0;n<bytes;n++)
 		print_hex(in[n],out,1);
 }
+    
+    GUID createGUID() {
+        GUID out;
+#ifdef _WIN32
+        if (FAILED(CoCreateGuid( & out ) ) ) crash();
+#else
+        pfc::nixGetRandomData( &out, sizeof(out) );
+#endif
+        return out;
+    }
 
 }
 
 
 
 const GUID pfc::guid_null = { 0, 0, 0, { 0, 0, 0, 0, 0, 0, 0, 0 } };
+

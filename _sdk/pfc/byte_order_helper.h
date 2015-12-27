@@ -12,7 +12,7 @@ namespace pfc {
 
 	template<typename T> T byteswap_int_t(T p_source) {
 		enum { width = sizeof(T) };
-		typedef sized_int_t<width>::t_unsigned tU;
+		typedef typename sized_int_t<width>::t_unsigned tU;
 		tU in = p_source, out = 0;
 		for(unsigned walk = 0; walk < width; ++walk) {
 			out |= ((in >> (walk * 8)) & 0xFF) << ((width - 1 - walk) * 8);

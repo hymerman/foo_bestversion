@@ -252,7 +252,7 @@ namespace pfc {
 		return acc;
 	}
 
-    class string;
+    class string; 
     template<> class traits_t<string> : public traits_default {};
 	
 }

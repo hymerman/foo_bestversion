@@ -287,6 +287,7 @@
     <ClCompile Include="input_file_type.cpp" />
     <ClCompile Include="link_resolver.cpp" />
     <ClCompile Include="mainmenu.cpp" />
+    <ClCompile Include="main_thread_callback.cpp" />
     <ClCompile Include="mem_block_container.cpp" />
     <ClCompile Include="menu_helpers.cpp">
     </ClCompile>
@@ -300,6 +301,7 @@
     </ClCompile>
     <ClCompile Include="metadb_handle_list.cpp">
     </ClCompile>
+    <ClCompile Include="output.cpp" />
     <ClCompile Include="packet_decoder.cpp">
     </ClCompile>
     <ClCompile Include="playable_location.cpp">

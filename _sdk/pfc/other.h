@@ -310,6 +310,8 @@ namespace pfc {
 		PFC_CLASS_NOT_COPYABLE_EX(bigmem)
 	};
 
+    
+    double exp_int( double base, int exp );
 }
 
 #endif
