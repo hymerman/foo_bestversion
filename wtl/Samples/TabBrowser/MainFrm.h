@@ -438,10 +438,13 @@ public:
 		return 0;
 	}
 
-	LRESULT OnBrowserDocumentComplete(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM lParam, BOOL& /*bHandled*/)
+	LRESULT OnBrowserDocumentComplete(UINT /*uMsg*/, WPARAM wParam, LPARAM lParam, BOOL& /*bHandled*/)
 	{
+		HWND hWndPage = (HWND)wParam;
 		LPCTSTR lpstrAddress = (LPCTSTR)lParam;
-		m_cb.SetWindowText(lpstrAddress);
+
+		if(hWndPage == m_view.GetPageHWND(m_view.GetActivePage()))
+			m_cb.SetWindowText(lpstrAddress);
 
 		if(m_cb.FindStringExact(-1, lpstrAddress) == CB_ERR)
 			m_cb.AddItem(lpstrAddress, -1, -1, 0);

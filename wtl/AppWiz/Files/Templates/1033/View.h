@@ -74,6 +74,18 @@ public:
 	}
 [!endif]
 [!endif]
+[!if WTL_APPTYPE_TABVIEW]
+[!if WTL_USE_CPP_FILES]
+
+	virtual void OnFinalMessage(HWND /*hWnd*/);
+[!else]
+
+	virtual void OnFinalMessage(HWND /*hWnd*/)
+	{
+		delete this;
+	}
+[!endif]
+[!endif]
 
 	BEGIN_MSG_MAP([!output WTL_VIEW_CLASS])
 [!if WTL_VIEWTYPE_GENERIC]

@@ -40,9 +40,9 @@ END
 
 3 TEXTINCLUDE 
 BEGIN
-    "#ifndef _EMBEDDED_MANIFEST"
+    "#ifndef _EMBEDDED_MANIFEST\r\n"
     "CREATEPROCESS_MANIFEST_RESOURCE_ID RT_MANIFEST ""res\\\\TabBrowser.exe.manifest""\r\n"
-    "#endif"
+    "#endif\r\n"
     "\0"
 END
 

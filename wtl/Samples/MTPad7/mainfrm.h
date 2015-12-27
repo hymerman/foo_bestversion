@@ -412,7 +412,6 @@ public:
 	LRESULT OnViewRibbon(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/) 
 	{
 		ShowRibbonUI(!IsRibbonUI(), UI_MAKEAPPMODE(prev.IsWindow())); 
-///**/		m_view.Invalidate();
 		UISetCheck(ID_VIEW_RIBBON, IsRibbonUI());
 		return 0; 
 	} 

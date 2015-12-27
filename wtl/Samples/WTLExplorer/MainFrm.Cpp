@@ -4,7 +4,6 @@
 
 #include <shlobj.h>
 #include <shlguid.h>
-#include <ntquery.h>
 
 #include "mainfrm.h"
 

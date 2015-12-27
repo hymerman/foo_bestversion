@@ -45,7 +45,9 @@ END
 
 3 TEXTINCLUDE DISCARDABLE 
 BEGIN
+    "#ifndef _EMBEDDED_MANIFEST\r\n"
     "CREATEPROCESS_MANIFEST_RESOURCE_ID RT_MANIFEST ""res\\\\Wizard97Test.exe.manifest""\r\n"
+    "#endif\r\n"
     "\0"
 END
 
@@ -200,8 +202,7 @@ BEGIN
     CONTROL         "",IDC_LIST_FILES,"SysListView32",LVS_REPORT | 
                     LVS_SHOWSELALWAYS | LVS_ALIGNLEFT | WS_BORDER | 
                     WS_TABSTOP,21,32,275,86
-    PUSHBUTTON      "Preview File List",IDC_BTN_PREVIEW,21,122,79,14,0,
-                    WS_EX_STATICEDGE
+    PUSHBUTTON      "Preview File List",IDC_BTN_PREVIEW,21,122,79,14
 END
 
 IDD_WIZ97_OUTPUT DIALOGEX  0, 0, 317, 143
@@ -478,7 +479,9 @@ END
 //
 // Generated from the TEXTINCLUDE 3 resource.
 //
+#ifndef _EMBEDDED_MANIFEST
 CREATEPROCESS_MANIFEST_RESOURCE_ID RT_MANIFEST "res\\Wizard97Test.exe.manifest"
+#endif
 
 /////////////////////////////////////////////////////////////////////////////
 #endif    // not APSTUDIO_INVOKED

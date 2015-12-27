@@ -30,32 +30,29 @@ public:
 [!if WTL_APPTYPE_SDI || WTL_APPTYPE_MTSDI]
 [!if WTL_USE_VIEW]
 	[!output WTL_VIEW_CLASS] m_view;
-
 [!endif]
 [!endif]
 [!if WTL_USE_CMDBAR || WTL_USE_RIBBON]
 [!if WTL_APPTYPE_MDI]
 	CMDICommandBarCtrl m_CmdBar;
-
 [!else]
 	CCommandBarCtrl m_CmdBar;
-
 [!endif]
 [!endif]
 [!if WTL_VIEWTYPE_LISTBOX || WTL_VIEWTYPE_EDIT || WTL_VIEWTYPE_RICHEDIT]
 [!if !WTL_APPTYPE_MDI]
 	CFont m_font;
-
 [!endif]
 [!endif]
 [!if WTL_USE_RIBBON]
+
 	//TODO: Declare ribbon controls
 
 	// Ribbon control map
 	BEGIN_RIBBON_CONTROL_MAP(CMainFrame)
 	END_RIBBON_CONTROL_MAP()
-
 [!endif]
+
 [!if WTL_USE_CPP_FILES]
 	virtual BOOL PreTranslateMessage(MSG* pMsg);
 [!else]

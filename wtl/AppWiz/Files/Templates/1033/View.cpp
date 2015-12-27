@@ -53,6 +53,13 @@ void [!output WTL_VIEW_CLASS]::DoPaint(CDCHandle dc)
 	//TODO: Add your drawing code here
 }
 [!endif]
+[!if WTL_APPTYPE_TABVIEW]
+
+void [!output WTL_VIEW_CLASS]::OnFinalMessage(HWND /*hWnd*/)
+{
+	delete this;
+}
+[!endif]
 [!if WTL_VIEWTYPE_GENERIC]
 
 LRESULT [!output WTL_VIEW_CLASS]::OnPaint(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/, BOOL& /*bHandled*/)
