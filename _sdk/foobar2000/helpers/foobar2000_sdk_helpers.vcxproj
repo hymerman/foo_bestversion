@@ -89,7 +89,7 @@
       <WarningLevel>Level3</WarningLevel>
       <SuppressStartupBanner>true</SuppressStartupBanner>
       <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
-      <RuntimeLibrary>MultiThreadedDLL</RuntimeLibrary>
+      <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
     </ClCompile>
     <ResourceCompile>
       <PreprocessorDefinitions>NDEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
@@ -126,12 +126,12 @@
       <Optimization>Disabled</Optimization>
       <PreprocessorDefinitions>WIN32;_DEBUG;_WINDOWS;_WIN32_WINNT=0x501;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <BasicRuntimeChecks>EnableFastChecks</BasicRuntimeChecks>
-      <RuntimeLibrary>MultiThreadedDebugDLL</RuntimeLibrary>
       <PrecompiledHeader>Use</PrecompiledHeader>
       <PrecompiledHeaderFile>stdafx.h</PrecompiledHeaderFile>
       <WarningLevel>Level3</WarningLevel>
       <SuppressStartupBanner>true</SuppressStartupBanner>
       <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
+      <RuntimeLibrary>MultiThreadedDebug</RuntimeLibrary>
     </ClCompile>
     <ResourceCompile>
       <PreprocessorDefinitions>_DEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
@@ -212,13 +212,8 @@
       <BasicRuntimeChecks Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">EnableFastChecks</BasicRuntimeChecks>
     </ClCompile>
     <ClCompile Include="file_move_helper.cpp" />
-    <ClCompile Include="file_wrapper_simple.cpp">
-      <Optimization Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Disabled</Optimization>
-      <BasicRuntimeChecks Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">EnableFastChecks</BasicRuntimeChecks>
-      <Optimization Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Disabled</Optimization>
-      <BasicRuntimeChecks Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">EnableFastChecks</BasicRuntimeChecks>
-    </ClCompile>
     <ClCompile Include="filetimetools.cpp" />
+    <ClCompile Include="file_win32_wrapper.cpp" />
     <ClCompile Include="IDataObjectUtils.cpp" />
     <ClCompile Include="input_helpers.cpp" />
     <ClCompile Include="listview_helper.cpp">
@@ -274,7 +269,8 @@
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="album_art_helpers.h" />
+    <ClInclude Include="CPowerRequest.h" />
+    <ClInclude Include="fullFileBuffer.h" />
     <ClInclude Include="bitreader_helper.h" />
     <ClInclude Include="CallForwarder.h" />
     <ClInclude Include="cfg_guidlist.h" />
@@ -292,7 +288,6 @@
     <ClInclude Include="file_list_helper.h" />
     <ClInclude Include="file_move_helper.h" />
     <ClInclude Include="file_win32_wrapper.h" />
-    <ClInclude Include="file_wrapper_simple.h" />
     <ClInclude Include="filetimetools.h" />
     <ClInclude Include="helpers.h" />
     <ClInclude Include="icon_remapping_wildcard.h" />
@@ -303,6 +298,7 @@
     <ClInclude Include="metadb_io_hintlist.h" />
     <ClInclude Include="mp3_utils.h" />
     <ClInclude Include="playlist_position_reference_tracker.h" />
+    <ClInclude Include="ProcessUtils.h" />
     <ClInclude Include="ProfileCache.h" />
     <ClInclude Include="seekabilizer.h" />
     <ClInclude Include="StdAfx.h" />

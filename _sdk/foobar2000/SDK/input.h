@@ -136,6 +136,14 @@ public:
 	FB2K_MAKE_SERVICE_INTERFACE(input_info_writer,input_info_reader);
 };
 
+class NOVTABLE input_info_writer_v2 : public input_info_writer {
+public:
+	//! Removes all tags from this file. Cancels any set_info() requests on this object. Does not require a commit() afterwards.
+	virtual void remove_tags(abort_callback & abort) = 0;
+
+	FB2K_MAKE_SERVICE_INTERFACE(input_info_writer_v2, input_info_writer);
+};
+
 class NOVTABLE input_entry : public service_base
 {
 public:

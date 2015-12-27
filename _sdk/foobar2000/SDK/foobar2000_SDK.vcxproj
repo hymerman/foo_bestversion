@@ -81,12 +81,12 @@
       <Optimization>Disabled</Optimization>
       <PreprocessorDefinitions>WIN32;_DEBUG;_WINDOWS;_WIN32_WINNT=0x501;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <BasicRuntimeChecks>EnableFastChecks</BasicRuntimeChecks>
-      <RuntimeLibrary>MultiThreadedDebugDLL</RuntimeLibrary>
       <PrecompiledHeader>Use</PrecompiledHeader>
       <PrecompiledHeaderFile>foobar2000.h</PrecompiledHeaderFile>
       <WarningLevel>Level3</WarningLevel>
       <SuppressStartupBanner>true</SuppressStartupBanner>
       <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
+      <RuntimeLibrary>MultiThreadedDebug</RuntimeLibrary>
     </ClCompile>
     <ResourceCompile>
       <PreprocessorDefinitions>_DEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
@@ -132,7 +132,7 @@
       <WarningLevel>Level3</WarningLevel>
       <SuppressStartupBanner>true</SuppressStartupBanner>
       <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
-      <RuntimeLibrary>MultiThreadedDLL</RuntimeLibrary>
+      <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
     </ClCompile>
     <ResourceCompile>
       <PreprocessorDefinitions>NDEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
@@ -168,6 +168,7 @@
     <ClInclude Include="abort_callback.h" />
     <ClInclude Include="advconfig.h" />
     <ClInclude Include="album_art.h" />
+    <ClInclude Include="album_art_helpers.h" />
     <ClInclude Include="app_close_blocker.h" />
     <ClInclude Include="audio_chunk.h" />
     <ClInclude Include="audio_postprocessor.h" />
@@ -217,6 +218,7 @@
     <ClInclude Include="metadb_handle.h" />
     <ClInclude Include="modeless_dialog.h" />
     <ClInclude Include="ole_interaction.h" />
+    <ClInclude Include="output.h" />
     <ClInclude Include="packet_decoder.h" />
     <ClInclude Include="play_callback.h" />
     <ClInclude Include="playable_location.h" />
@@ -255,6 +257,7 @@
     <ClCompile Include="chapterizer.cpp" />
     <ClCompile Include="commandline.cpp" />
     <ClCompile Include="completion_notify.cpp" />
+    <ClCompile Include="componentversion.cpp" />
     <ClCompile Include="config_object.cpp" />
     <ClCompile Include="console.cpp">
     </ClCompile>
@@ -262,6 +265,7 @@
     </ClCompile>
     <ClCompile Include="dsp_manager.cpp">
     </ClCompile>
+    <ClCompile Include="file_cached_impl.cpp" />
     <ClCompile Include="file_info.cpp">
     </ClCompile>
     <ClCompile Include="file_info_impl.cpp">
@@ -313,6 +317,7 @@
     </ClCompile>
     <ClCompile Include="replaygain_info.cpp">
     </ClCompile>
+    <ClCompile Include="search_tools.cpp" />
     <ClCompile Include="service.cpp">
     </ClCompile>
     <ClCompile Include="stdafx.cpp">
