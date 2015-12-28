@@ -5,7 +5,6 @@
     <ClCompile Include="LastFm.cpp" />
     <ClCompile Include="Component.cpp" />
     <ClCompile Include="BestVersion.cpp" />
-    <ClCompile Include="DatabaseScopeLock.cpp" />
     <ClCompile Include="PlaylistGenerator.cpp" />
   </ItemGroup>
   <ItemGroup>
@@ -16,7 +15,6 @@
     <ClInclude Include="BestVersion.h" />
     <ClInclude Include="Maths.h" />
     <ClInclude Include="FoobarSDKWrapper.h" />
-    <ClInclude Include="DatabaseScopeLock.h" />
     <ClInclude Include="PlaylistGenerator.h" />
     <ClInclude Include="ToString.h" />
     <ClInclude Include="RapidJsonWrapper.h" />

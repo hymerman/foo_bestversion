@@ -1,6 +1,5 @@
 #include "BestVersion.h"
 
-#include "DatabaseScopeLock.h"
 #include "Maths.h"
 #include "ToString.h"
 
@@ -11,26 +10,23 @@ namespace bestversion {
 
 //------------------------------------------------------------------------------
 
-// database has to be locked before calling this function
 std::string getMainArtist(metadb_handle_list_cref tracks)
 {
-	// Lock the database for the duration of this scope.
-	DatabaseScopeLock databaseLock;
-
 	// Keep track of the number of each artist name we encounter.
 	std::map<const char*, t_size> artists;
 
 	// For each track, increment the number of occurrences of its artist.
 	for(t_size i = 0; i < tracks.get_count(); i++)
 	{
-		const file_info* fileInfo;
-		if(tracks[i]->get_info_async_locked(fileInfo))
+		service_ptr_t<metadb_info_container> outInfo;
+		if(tracks[i]->get_async_info_ref(outInfo))
 		{
-			const bool has_artist_tag = fileInfo->meta_exists("artist");
-			const bool has_album_artist_tag = fileInfo->meta_exists("album artist");
+			const file_info& fileInfo = outInfo->info();
+			const bool has_artist_tag = fileInfo.meta_exists("artist");
+			const bool has_album_artist_tag = fileInfo.meta_exists("album artist");
 			if(has_artist_tag || has_album_artist_tag)
 			{
-				const char * artist = has_artist_tag ? fileInfo->meta_get("artist", 0) : fileInfo->meta_get("album artist", 0);
+				const char * artist = has_artist_tag ? fileInfo.meta_get("artist", 0) : fileInfo.meta_get("album artist", 0);
 				++artists[artist];
 			}
 		}
@@ -54,25 +50,25 @@ std::string getMainArtist(metadb_handle_list_cref tracks)
 
 //------------------------------------------------------------------------------
 
-// database has to be locked before calling this function
 inline bool isTrackByArtist(const std::string& artist, const metadb_handle_ptr& track)
 {
 	// todo: ignore slight differences, e.g. in punctuation
-	const file_info* fileInfo;
 
-	if(track->get_info_async_locked(fileInfo))
+	service_ptr_t<metadb_info_container> outInfo;
+	if(track->get_async_info_ref(outInfo))
 	{
-		for(t_size j = 0; j < fileInfo->meta_get_count_by_name("artist"); j++)
+		const file_info& fileInfo = outInfo->info();
+		for(t_size j = 0; j < fileInfo.meta_get_count_by_name("artist"); j++)
 		{
-			if(stricmp_utf8(fileInfo->meta_get("artist", j), artist.c_str()) == 0)
+			if(stricmp_utf8(fileInfo.meta_get("artist", j), artist.c_str()) == 0)
 			{
 				return true;
 			}
 		}
 
-		for(t_size j = 0; j < fileInfo->meta_get_count_by_name("album artist"); j++)
+		for(t_size j = 0; j < fileInfo.meta_get_count_by_name("album artist"); j++)
 		{
-			if(stricmp_utf8(fileInfo->meta_get("album artist", j), artist.c_str()) == 0)
+			if(stricmp_utf8(fileInfo.meta_get("album artist", j), artist.c_str()) == 0)
 			{
 				return true;
 			}
@@ -88,13 +84,21 @@ inline bool isTrackByArtist(const std::string& artist, const metadb_handle_ptr& 
 bool doesTrackHaveSimilarTitle(const std::string& title, const metadb_handle_ptr& track)
 {
 	// todo: ignore slight differences, e.g. in punctuation
-	const file_info * fileInfo;
-	if(!track->get_info_async_locked(fileInfo) || !fileInfo->meta_exists("title"))
+	service_ptr_t<metadb_info_container> outInfo;
+	if (!track->get_async_info_ref(outInfo))
 	{
 		return false;
 	}
 
-	const std::string fileTitle = fileInfo->meta_get("title", 0);
+	const file_info& fileInfo = outInfo->info();
+	
+	if(!fileInfo.meta_exists("title"))
+	{
+		return false;
+	}
+
+
+	const std::string fileTitle = fileInfo.meta_get("title", 0);
 
 	if(stricmp_utf8(fileTitle.c_str(), title.c_str()) == 0)
 	{
@@ -160,8 +164,16 @@ bool fileTitlesMatchExcludingBracketsOnLhs(const std::string& lhs, const std::st
 // database has to be locked before calling this function
 float calculateTrackRating(const std::string& title, const metadb_handle_ptr& track)
 {
-	const file_info * fileInfo;
-	if(!track->get_info_async_locked(fileInfo) || !fileInfo->meta_exists("title"))
+	service_ptr_t<metadb_info_container> outInfo;
+	if(!track->get_async_info_ref(outInfo))
+	{
+		// Don't pick it we can't get any info.
+		return -1.0f;
+	}
+
+	const file_info& fileInfo = outInfo->info();
+
+	if (!fileInfo.meta_exists("title"))
 	{
 		// Don't pick it if it doesn't have a title.
 		return -1.0f;
@@ -169,7 +181,7 @@ float calculateTrackRating(const std::string& title, const metadb_handle_ptr& tr
 
 	float totalRating = 0.0f;
 
-	const std::string fileTitle = fileInfo->meta_get("title", 0);
+	const std::string fileTitle = fileInfo.meta_get("title", 0);
 
 	// Assume title is already roughly correct.
 	if(stricmp_utf8(fileTitle.c_str(), title.c_str()) == 0)
@@ -185,9 +197,9 @@ float calculateTrackRating(const std::string& title, const metadb_handle_ptr& tr
 		totalRating += ratingForTitleMatchWithBrackets;
 	}
 
-	if(fileInfo->meta_exists("PLAY_COUNTER"))
+	if(fileInfo.meta_exists("PLAY_COUNTER"))
 	{
-		const int playCount = atoi(fileInfo->meta_get("PLAY_COUNTER",0));
+		const int playCount = atoi(fileInfo.meta_get("PLAY_COUNTER",0));
 
 		static const float lowPlayCount = 0.0f;
 		static const float highPlayCount = 10.0f;
@@ -200,7 +212,7 @@ float calculateTrackRating(const std::string& title, const metadb_handle_ptr& tr
 		totalRating += playCountRating;
 	}
 
-	const auto bitrate = fileInfo->info_get_bitrate();
+	const auto bitrate = fileInfo.info_get_bitrate();
 
 	static const float lowBitrate = 0.0f;
 	static const float highBitrate = 1000.0f;
@@ -215,9 +227,9 @@ float calculateTrackRating(const std::string& title, const metadb_handle_ptr& tr
 	static const float releaseTypeWeighting = 3.0f;
 	float releaseTypeRating = 0.55f;	// Default for if nothing is set; assume it's somewhere between a live album and a soundtrack.
 
-	if(fileInfo->meta_exists("musicbrainz album type") || fileInfo->meta_exists("releasetype"))
+	if(fileInfo.meta_exists("musicbrainz album type") || fileInfo.meta_exists("releasetype"))
 	{
-		const std::string albumType = fileInfo->meta_exists("musicbrainz album type") ? fileInfo->meta_get("musicbrainz album type", 0) : fileInfo->meta_get("releasetype", 0);
+		const std::string albumType = fileInfo.meta_exists("musicbrainz album type") ? fileInfo.meta_get("musicbrainz album type", 0) : fileInfo.meta_get("releasetype", 0);
 
 		if(albumType == "album")
 		{
@@ -262,10 +274,10 @@ float calculateTrackRating(const std::string& title, const metadb_handle_ptr& tr
 	static float albumArtistWeighting = 1.0f;
 	float albumArtistRating = 1.0f;
 
-	if(fileInfo->meta_exists("album artist") && fileInfo->meta_exists("artist"))
+	if(fileInfo.meta_exists("album artist") && fileInfo.meta_exists("artist"))
 	{
-		const std::string artist = fileInfo->meta_get("artist", 0);
-		const std::string albumArtist = fileInfo->meta_get("album artist", 0);
+		const std::string artist = fileInfo.meta_get("artist", 0);
+		const std::string albumArtist = fileInfo.meta_get("album artist", 0);
 
 		if(albumArtist == artist)
 		{

@@ -3,7 +3,6 @@
 #include "FoobarSDKWrapper.h"
 
 #include "BestVersion.h"
-#include "DatabaseScopeLock.h"
 #include "LastFm.h"
 #include "PlaylistGenerator.h"
 
@@ -399,26 +398,21 @@ public:
 			p_status.set_progress_float(0.5f);
 			p_status.force_update();
 
+			// Just look at one artist.
+			filterTracksByArtist(artist, library);
+
+			for(auto iter = trackList.begin(); iter != trackList.end(); iter++ )
 			{
-				// Lock the database for the duration of this scope.
-				DatabaseScopeLock databaseLock;
+				// Copy the library then filter it to tracks with this title.
+				auto subsetOfLibrary = library;
+				filterTracksByCloseTitle(iter->second, subsetOfLibrary);
 
-				// Just look at one artist.
-				filterTracksByArtist(artist, library);
+				// Pick the best version of all these tracks and add it to the list if found.
+				metadb_handle_ptr track = getBestTrackByTitle(iter->second, subsetOfLibrary);
 
-				for(auto iter = trackList.begin(); iter != trackList.end(); iter++ )
+				if(track != 0)
 				{
-					// Copy the library then filter it to tracks with this title.
-					auto subsetOfLibrary = library;
-					filterTracksByCloseTitle(iter->second, subsetOfLibrary);
-
-					// Pick the best version of all these tracks and add it to the list if found.
-					metadb_handle_ptr track = getBestTrackByTitle(iter->second, subsetOfLibrary);
-
-					if(track != 0)
-					{
-						tracks.add_item(track);
-					}
+					tracks.add_item(track);
 				}
 			}
 
@@ -534,9 +528,6 @@ void replaceWithBestVersion(const metadb_handle_ptr& track)
 
 void replaceWithBestVersion(const pfc::list_base_const_t<metadb_handle_ptr>& tracks)
 {
-	// Lock the database for the duration of this scope.
-	DatabaseScopeLock databaseLock;
-
 	for(t_size index = 0; index < tracks.get_count(); ++index)
 	{
 		replaceWithBestVersion(tracks[index]);

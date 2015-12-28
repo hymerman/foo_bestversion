@@ -102,7 +102,6 @@
     <ClCompile Include="BestVersion.cpp" />
     <ClCompile Include="Component.cpp" />
     <ClCompile Include="ContextMenu.cpp" />
-    <ClCompile Include="DatabaseScopeLock.cpp" />
     <ClCompile Include="LastFm.cpp" />
     <ClCompile Include="PlaylistGenerator.cpp" />
   </ItemGroup>
@@ -113,7 +112,6 @@
     <ClInclude Include="BestVersion.h" />
     <ClInclude Include="Component.h" />
     <ClInclude Include="ContextMenu.h" />
-    <ClInclude Include="DatabaseScopeLock.h" />
     <ClInclude Include="FoobarSDKWrapper.h" />
     <ClInclude Include="LastFm.h" />
     <ClInclude Include="Maths.h" />
