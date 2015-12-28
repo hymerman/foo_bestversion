@@ -20,13 +20,13 @@ std::string url_encode(const std::string& in)
 	std::string out;
 	out.reserve(in.length());
 
-	for(auto c : in)
+	for(unsigned char c : in)
 	{
-		if (isalnum(c))
+		if(isalnum(c))
 		{
 			out.push_back(c);
 		}
-		else if (isspace(c))
+		else if(isspace(c))
 		{
 			out.push_back('+');
 		}
