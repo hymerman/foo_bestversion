@@ -3,6 +3,7 @@
 *.opensdf
 *.user
 *.aps
+*.VC.opendb
 ipch/
 Debug/
 Release/
