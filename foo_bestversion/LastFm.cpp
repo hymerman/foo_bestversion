@@ -116,19 +116,22 @@ ArtistChart getArtistChart(const std::string& artist, const std::function<void (
 			throw std::exception("tracks json array element is not an object; last.fm data format not as expected!");
 		}
 
+		// Extract name and playcount and bail out if they're not present or are not strings.
 		const auto& nameValue = track["name"];
-		const auto& mbidValue = track["mbid"];
 		const auto& playCountValue = track["playcount"];
 
-		if(!nameValue.IsString() || !mbidValue.IsString() || !playCountValue.IsString())
+		if(!nameValue.IsString() || !playCountValue.IsString())
 		{
 			throw std::exception("name, mbid or playcount values on a track are not strings; last.fm data format not as expected!");
 		}
 
-		// Extract a string name, mbid and reach from the track.
-		const std::string name = track["name"].GetString();
-		const std::string mbid = track["mbid"].GetString();
-		const std::string playCountAsString = track["playcount"].GetString();
+		// MBID is optional.
+		const auto& mbidValue = track["mbid"];
+
+		// Extract a string name, mbid and playCount from the track.
+		const std::string name = nameValue.GetString();
+		const std::string mbid = mbidValue.IsString() ? mbidValue.GetString() : "No MBID";
+		const std::string playCountAsString = playCountValue.GetString();
 
 		// Parse the reach string as an integer.
 		const unsigned long playCount = from_string<unsigned long>(playCountAsString);
