@@ -493,7 +493,8 @@ void replaceWithBestVersion(const metadb_handle_ptr& track)
 	}
 
 	const bool has_artist_tag = fileInfo.meta_exists("artist");
-	if(!has_artist_tag && !fileInfo.meta_exists("title"))
+	const bool has_album_artist_tag = fileInfo.meta_exists("album artist");
+	if(!has_artist_tag && !has_album_artist_tag)
 	{
 		console::printf("File is missing artist and album artist tags: %s", track->get_path());
 		return;
