@@ -477,28 +477,30 @@ void generateArtistPlaylist(const pfc::list_base_const_t<metadb_handle_ptr>& tra
 
 void replaceWithBestVersion(const metadb_handle_ptr& track)
 {
-	const file_info* fileInfo;
-	if(!track->get_info_async_locked(fileInfo))
+	service_ptr_t<metadb_info_container> outInfo;
+	if(!track->get_async_info_ref(outInfo))
 	{
 		console::printf("Couldn't get file info for file %s", track->get_path());
 		return;
 	}
 
-	if(!fileInfo->meta_exists("title"))
+	const file_info& fileInfo = outInfo->info();
+
+	if(!fileInfo.meta_exists("title"))
 	{
 		console::printf("File is missing track tag: %s", track->get_path());
 		return;
 	}
 
-	const bool has_artist_tag = fileInfo->meta_exists("artist");
-	if(!has_artist_tag && !fileInfo->meta_exists("title"))
+	const bool has_artist_tag = fileInfo.meta_exists("artist");
+	if(!has_artist_tag && !fileInfo.meta_exists("title"))
 	{
 		console::printf("File is missing artist and album artist tags: %s", track->get_path());
 		return;
 	}
 
-	const std::string artist = has_artist_tag ? fileInfo->meta_get("artist", 0) : fileInfo->meta_get("album artist", 0);
-	const std::string title = fileInfo->meta_get("title", 0);
+	const std::string artist = has_artist_tag ? fileInfo.meta_get("artist", 0) : fileInfo.meta_get("album artist", 0);
+	const std::string title = fileInfo.meta_get("title", 0);
 
 	if(artist == "" || title == "")
 	{
