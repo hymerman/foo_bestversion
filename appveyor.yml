@@ -7,3 +7,25 @@ configuration:
 
 build:
   project: foo_bestversion/foo_bestversion.sln
+
+after_build:
+  # Zip up the component DLL into a file with .fb2k-component extension, as used by foobar2000
+  7z a -tzip foo_bestversion.fb2k-component %APPVEYOR_BUILD_FOLDER%\foo_bestversion\Release\foo_bestversion.dll
+
+artifacts:
+  # Capture the component and PDB.
+  - path: foo_bestversion/Release/foo_bestversion.fb2k-component
+    name: foo_bestversion.fb2k-component
+  - path: foo_bestversion/Release/foo_bestversion.pdb
+    name: foo_bestversion.pdb
+
+deploy:
+  description: '' # description is mandatory but empty; will be filled in manually later
+  provider: GitHub
+  auth_token:
+    secure: ezLCE6XZuW7mcQhTUwFbeK2n+QkwQf5jz2U7UzQ3T2IGFbsJtDHUditiljjt43Ih # encrypted token from GitHub
+  artifact: foo_bestversion.fb2k-component,foo_bestversion.pdb               # upload component DLL and PDB
+  draft: true                      # draft release; mark released manually
+  on:
+    branch: master                 # release from master branch only
+    appveyor_repo_tag: true        # deploy on tag push only
