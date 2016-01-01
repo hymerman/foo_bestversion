@@ -10,7 +10,7 @@ build:
 
 after_build:
   # Zip up the component DLL into a file with .fb2k-component extension, as used by foobar2000
-  7z a -tzip foo_bestversion.fb2k-component %APPVEYOR_BUILD_FOLDER%\foo_bestversion\Release\foo_bestversion.dll
+  7z a -tzip foo_bestversion.fb2k-component %APPVEYOR_BUILD_FOLDER%\foo_bestversion\%CONFIGURATION%\foo_bestversion.dll
 
 artifacts:
   # Capture the component and PDB.
