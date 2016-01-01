@@ -28,4 +28,5 @@ deploy:
   draft: true                      # draft release; mark released manually
   on:
     branch: master                 # release from master branch only
+    configuration: Release         # Release configuration only
     appveyor_repo_tag: true        # deploy on tag push only
