@@ -2,7 +2,6 @@
 #include "FoobarSDKWrapper.h"
 #include "ATLHelpersWrapper.h"
 #include "BestVersion.h"
-#include "DatabaseScopeLock.h"
 #include "resource.h"
 #include "ToString.h"
 #include "PlaylistGenerator.h"
@@ -182,9 +181,6 @@ private:
 		pfc::list_t<metadb_handle_ptr> library;
 		static_api_ptr_t<library_manager> lm;
 		lm->get_all_items(library);
-
-		// Lock the database for the duration of this scope.
-		DatabaseScopeLock databaseLock;
 
 		for(size_t match_index = 0; match_index < results.size(); ++match_index)
 		{
