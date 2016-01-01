@@ -6,6 +6,8 @@
 #pragma warning (disable: 4239) // nonstandard extension used : 'argument' : conversion from X to Y
 #pragma warning (disable: 4244) // conversion from X to Y, possible loss of data
 #pragma warning (disable: 4245) // conversion from X to Y, signed/unsigned mismatch
+#pragma warning (disable: 4302) // 'type cast': truncation from 'X' to 'Y'
+#pragma warning (disable: 4996) // 'X': was declared deprecated
 #pragma warning (disable: 4389) // signed/unsigned mismatch
 #include "foobar2000/ATLHelpers/ATLHelpers.h"
 #pragma warning (pop)
