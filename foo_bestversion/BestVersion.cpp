@@ -80,7 +80,6 @@ inline bool isTrackByArtist(const std::string& artist, const metadb_handle_ptr& 
 
 //------------------------------------------------------------------------------
 
-// database has to be locked before calling this function
 bool doesTrackHaveSimilarTitle(const std::string& title, const metadb_handle_ptr& track)
 {
 	// todo: ignore slight differences, e.g. in punctuation
@@ -114,7 +113,6 @@ bool doesTrackHaveSimilarTitle(const std::string& title, const metadb_handle_ptr
 
 //------------------------------------------------------------------------------
 
-// database has to be locked before calling this function
 void filterTracksByArtist(const std::string& artist, pfc::list_base_t<metadb_handle_ptr>& tracks)
 {
 	const t_size n = tracks.get_count();
@@ -128,7 +126,8 @@ void filterTracksByArtist(const std::string& artist, pfc::list_base_t<metadb_han
 	tracks.remove_mask(deleteMask);
 }
 
-// database has to be locked before calling this function
+//------------------------------------------------------------------------------
+
 void filterTracksByCloseTitle(const std::string& title, pfc::list_base_t<metadb_handle_ptr>& tracks)
 {
 	const t_size n = tracks.get_count();
@@ -161,7 +160,6 @@ bool fileTitlesMatchExcludingBracketsOnLhs(const std::string& lhs, const std::st
 
 //------------------------------------------------------------------------------
 
-// database has to be locked before calling this function
 float calculateTrackRating(const std::string& title, const metadb_handle_ptr& track)
 {
 	service_ptr_t<metadb_info_container> outInfo;
@@ -301,7 +299,6 @@ float calculateTrackRating(const std::string& title, const metadb_handle_ptr& tr
 
 //------------------------------------------------------------------------------
 
-// database has to be locked before calling this function
 // all tracks will be analysed; try to cut the size of the list down before calling.
 metadb_handle_ptr getBestTrackByTitle(const std::string& title, const pfc::list_base_t<metadb_handle_ptr>& tracks)
 {
