@@ -24,6 +24,7 @@ const contextmenu_group_popup_factory bestVersionContextMenuGroupFactory(bestVer
 
 void generateArtistPlaylist(const pfc::list_base_const_t<metadb_handle_ptr>& tracks);
 void replaceWithBestVersion(const pfc::list_base_const_t<metadb_handle_ptr>& tracks);
+void replaceWithLibraryVersion(const pfc::list_base_const_t<metadb_handle_ptr>& tracks);
 
 //------------------------------------------------------------------------------
 
@@ -207,6 +208,7 @@ public:
 		enum
 		{
 			ReplaceWithBestVersion = 0,
+			ReplaceWithLibraryVersion,
 			MAX
 		};
 	};
@@ -237,6 +239,12 @@ public:
 				break;
 			}
 
+			case Items::ReplaceWithLibraryVersion:
+			{
+				out = "Replace with same track in the library";
+				break;
+			}
+
 			default:
 			{
 				uBugCheck();
@@ -256,6 +264,13 @@ public:
 			case Items::ReplaceWithBestVersion:
 			{
 				replaceWithBestVersion(tracks);
+				break;
+			}
+
+			case Items::ReplaceWithLibraryVersion:
+			{
+				//replaceWithBestVersion(tracks);
+				replaceWithLibraryVersion(tracks);
 				break;
 			}
 
@@ -306,11 +321,20 @@ public:
 		// {4CAA2F50-2818-4DE5-B682-FB36483C9A5E}
 		static const GUID ReplaceWithBestVersionGUID = { 0x4caa2f50, 0x2818, 0x4de5, { 0xb6, 0x82, 0xfb, 0x36, 0x48, 0x3c, 0x9a, 0x5e } };
 
+		// {B9144A8F-8839-49D7-B2DA-C9CE9ED7517E}
+		static const GUID ReplaceWithLibraryVersionGUID = { 0xb9144a8f, 0x8839, 0x49d7,{ 0xb2, 0xda, 0xc9, 0xce, 0x9e, 0xd7, 0x51, 0x7e } };
+
+
 		switch(index)
 		{
 			case Items::ReplaceWithBestVersion:
 			{
 				return ReplaceWithBestVersionGUID;
+			}
+
+			case Items::ReplaceWithLibraryVersion:
+			{
+				return ReplaceWithLibraryVersionGUID;
 			}
 
 			default:
@@ -331,6 +355,12 @@ public:
 			case Items::ReplaceWithBestVersion:
 			{
 				out = "Replace a track in a playlist with a better version of the track from the library.";
+				return true;
+			}
+
+			case Items::ReplaceWithLibraryVersion:
+			{
+				out = "Replace a track in a playlist with the same file from the library, if it exists.";
 				return true;
 			}
 
@@ -534,6 +564,88 @@ void replaceWithBestVersion(const pfc::list_base_const_t<metadb_handle_ptr>& tra
 	for(t_size index = 0; index < tracks.get_count(); ++index)
 	{
 		replaceWithBestVersion(tracks[index]);
+	}
+}
+
+//------------------------------------------------------------------------------
+
+void replaceWithLibraryVersion(const metadb_handle_ptr& track)
+{
+	service_ptr_t<metadb_info_container> outInfo;
+	if (!track->get_async_info_ref(outInfo))
+	{
+		console::printf("Couldn't get file info for file %s", track->get_path());
+		return;
+	}
+
+	const file_info& fileInfo = outInfo->info();
+
+	if (!fileInfo.meta_exists("title"))
+	{
+		console::printf("File is missing title tag: %s", track->get_path());
+		return;
+	}
+
+	if (!fileInfo.meta_exists("tracknumber"))
+	{
+		console::printf("File is missing track number tag: %s", track->get_path());
+		return;
+	}
+
+	if (!fileInfo.meta_exists("album"))
+	{
+		console::printf("File is missing album tag: %s", track->get_path());
+		return;
+	}
+
+	const bool has_artist_tag = fileInfo.meta_exists("artist");
+	const bool has_album_artist_tag = fileInfo.meta_exists("album artist");
+	if (!has_artist_tag && !has_album_artist_tag)
+	{
+		console::printf("File is missing artist and album artist tags: %s", track->get_path());
+		return;
+	}
+
+	const std::string artist = has_artist_tag ? fileInfo.meta_get("artist", 0) : fileInfo.meta_get("album artist", 0);
+	const std::string title = fileInfo.meta_get("title", 0);
+	const std::string album = fileInfo.meta_get("album", 0);
+	const std::string track_n = fileInfo.meta_get("tracknumber", 0);
+
+
+	if (artist == "" || title == "" || album == "" || track_n == "")
+	{
+		console::printf("File has empty artist or title or track or album tag: %s", track->get_path());
+		return;
+	}
+
+	pfc::list_t<metadb_handle_ptr> library;
+
+	static_api_ptr_t<library_manager> lm;
+	lm->get_all_items(library);
+
+	filterTracksByArtist(artist, library);
+	filterTracksByExactTitle(title, library);
+	filterTracksByAlbum(album, library);
+	filterTracksByTrackNumber(track_n, library);
+
+
+	const metadb_handle_ptr bestVersionOfTrack = getBestTrackByTitle(title, library);
+
+	if (bestVersionOfTrack == 0)
+	{
+		console::printf("Couldn't find a library version of %s", title.c_str());
+	}
+	else
+	{
+		replaceTrackInActivePlaylist(track, bestVersionOfTrack);
+	}
+}
+
+void replaceWithLibraryVersion(const pfc::list_base_const_t<metadb_handle_ptr>& tracks)
+{
+	for (t_size index = 0; index < tracks.get_count(); ++index)
+	{
+		replaceWithLibraryVersion(tracks[index]);
 	}
 }
 
