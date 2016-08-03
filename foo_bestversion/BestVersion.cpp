@@ -80,7 +80,33 @@ inline bool isTrackByArtist(const std::string& artist, const metadb_handle_ptr& 
 
 //------------------------------------------------------------------------------
 
-bool doesTrackHaveSimilarTitle(const std::string& title, const metadb_handle_ptr& track)
+bool doesTrackHaveExactTagFieldValue(const std::string& field_name, const std::string& field_value, const metadb_handle_ptr& track) {
+	// todo: ignore slight differences, e.g. in punctuation
+	service_ptr_t<metadb_info_container> outInfo;
+	if (!track->get_async_info_ref(outInfo))
+	{
+		return false;
+	}
+
+	const file_info& fileInfo = outInfo->info();
+
+	if (!fileInfo.meta_exists(field_name.c_str()))
+	{
+		return false;
+	}
+
+
+	const std::string fileTag = fileInfo.meta_get(field_name.c_str(), 0);
+
+	if (stricmp_utf8(fileTag.c_str(), field_value.c_str()) == 0)
+	{
+		return true;
+	}
+
+	return false;
+}
+
+bool doesTrackHaveSimilarTitle(const std::string& title, const metadb_handle_ptr& track, bool exact)
 {
 	// todo: ignore slight differences, e.g. in punctuation
 	service_ptr_t<metadb_info_container> outInfo;
@@ -103,88 +129,7 @@ bool doesTrackHaveSimilarTitle(const std::string& title, const metadb_handle_ptr
 	{
 		return true;
 	}
-	else if(fileTitlesMatchExcludingBracketsOnLhs(fileTitle, title))
-	{
-		return true;
-	}
-
-	return false;
-}
-
-bool doesTrackHaveExactTitle(const std::string& title, const metadb_handle_ptr& track)
-{
-	// todo: ignore slight differences, e.g. in punctuation
-	service_ptr_t<metadb_info_container> outInfo;
-	if (!track->get_async_info_ref(outInfo))
-	{
-		return false;
-	}
-
-	const file_info& fileInfo = outInfo->info();
-
-	if (!fileInfo.meta_exists("title"))
-	{
-		return false;
-	}
-
-
-	const std::string fileTitle = fileInfo.meta_get("title", 0);
-
-	if (stricmp_utf8(fileTitle.c_str(), title.c_str()) == 0)
-	{
-		return true;
-	}
-
-	return false;
-}
-
-bool doesTrackHaveExactAlbum(const std::string& album, const metadb_handle_ptr& track)
-{
-	// todo: ignore slight differences, e.g. in punctuation
-	service_ptr_t<metadb_info_container> outInfo;
-	if (!track->get_async_info_ref(outInfo))
-	{
-		return false;
-	}
-
-	const file_info& fileInfo = outInfo->info();
-
-	if (!fileInfo.meta_exists("album"))
-	{
-		return false;
-	}
-
-
-	const std::string fileAlbum = fileInfo.meta_get("album", 0);
-
-	if (stricmp_utf8(fileAlbum.c_str(), album.c_str()) == 0)
-	{
-		return true;
-	}
-
-	return false;
-}
-
-bool doesTrackHaveExactTrackNumber(const std::string& tracknumber, const metadb_handle_ptr& track)
-{
-	// todo: ignore slight differences, e.g. in punctuation
-	service_ptr_t<metadb_info_container> outInfo;
-	if (!track->get_async_info_ref(outInfo))
-	{
-		return false;
-	}
-
-	const file_info& fileInfo = outInfo->info();
-
-	if (!fileInfo.meta_exists("tracknumber"))
-	{
-		return false;
-	}
-
-
-	const std::string fileAlbum = fileInfo.meta_get("tracknumber", 0);
-
-	if (stricmp_utf8(fileAlbum.c_str(), tracknumber.c_str()) == 0)
+	else if(!exact && fileTitlesMatchExcludingBracketsOnLhs(fileTitle, title))
 	{
 		return true;
 	}
@@ -193,6 +138,19 @@ bool doesTrackHaveExactTrackNumber(const std::string& tracknumber, const metadb_
 }
 
 //------------------------------------------------------------------------------
+
+void filterTracksByTagField(const std::string& field_name, const std::string& field_value, pfc::list_base_t<metadb_handle_ptr>& tracks)
+{
+	const t_size n = tracks.get_count();
+	bit_array_bittable deleteMask(n);
+
+	for (t_size i = 0; i < n; i++)
+	{
+		deleteMask.set(i, !doesTrackHaveExactTagFieldValue(field_name, field_value, tracks[i]));
+	}
+
+	tracks.remove_mask(deleteMask);
+}
 
 void filterTracksByArtist(const std::string& artist, pfc::list_base_t<metadb_handle_ptr>& tracks)
 {
@@ -209,59 +167,20 @@ void filterTracksByArtist(const std::string& artist, pfc::list_base_t<metadb_han
 
 //------------------------------------------------------------------------------
 
-void filterTracksByCloseTitle(const std::string& title, pfc::list_base_t<metadb_handle_ptr>& tracks)
+void filterTracksByCloseTitle(const std::string& title, pfc::list_base_t<metadb_handle_ptr>& tracks, bool exact)
 {
 	const t_size n = tracks.get_count();
 	bit_array_bittable deleteMask(n);
 
 	for(t_size i = 0; i < n; i++)
 	{
-		deleteMask.set(i, !doesTrackHaveSimilarTitle(title, tracks[i]));
+		deleteMask.set(i, !doesTrackHaveSimilarTitle(title, tracks[i], exact));
 	}
 
 	tracks.remove_mask(deleteMask);
 }
 
 //------------------------------------------------------------------------------
-
-void filterTracksByExactTitle(const std::string& title, pfc::list_base_t<metadb_handle_ptr>& tracks)
-{
-	const t_size n = tracks.get_count();
-	bit_array_bittable deleteMask(n);
-
-	for (t_size i = 0; i < n; i++)
-	{
-		deleteMask.set(i, !doesTrackHaveExactTitle(title, tracks[i]));
-	}
-
-	tracks.remove_mask(deleteMask);
-}
-
-void filterTracksByAlbum(const std::string& album, pfc::list_base_t<metadb_handle_ptr>& tracks)
-{
-	const t_size n = tracks.get_count();
-	bit_array_bittable deleteMask(n);
-
-	for (t_size i = 0; i < n; i++)
-	{
-		deleteMask.set(i, !doesTrackHaveExactAlbum(album, tracks[i]));
-	}
-
-	tracks.remove_mask(deleteMask);
-}
-
-void filterTracksByTrackNumber(const std::string& tracknumber, pfc::list_base_t<metadb_handle_ptr>& tracks)
-{
-	const t_size n = tracks.get_count();
-	bit_array_bittable deleteMask(n);
-
-	for (t_size i = 0; i < n; i++)
-	{
-		deleteMask.set(i, !doesTrackHaveExactTrackNumber(tracknumber, tracks[i]));
-	}
-
-	tracks.remove_mask(deleteMask);
-}
 
 bool fileTitlesMatchExcludingBracketsOnLhs(const std::string& lhs, const std::string& rhs)
 {

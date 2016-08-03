@@ -624,9 +624,9 @@ void replaceWithLibraryVersion(const metadb_handle_ptr& track)
 	lm->get_all_items(library);
 
 	filterTracksByArtist(artist, library);
-	filterTracksByExactTitle(title, library);
-	filterTracksByAlbum(album, library);
-	filterTracksByTrackNumber(track_n, library);
+	filterTracksByCloseTitle(title, library, true);
+	filterTracksByTagField("album", album, library);
+	filterTracksByTagField("tracknumber", track_n, library);
 
 
 	const metadb_handle_ptr bestVersionOfTrack = getBestTrackByTitle(title, library);
