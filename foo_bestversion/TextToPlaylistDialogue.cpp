@@ -35,6 +35,9 @@ private:
 
 	BOOL OnInitDialog(CWindow, LPARAM)
 	{
+		// Other favourites:
+		// To match text in the form "artist ||| track ||| other stuff"
+		// ^(.*?) \|\|\| (.*?) \|\|\| .*
 		SetDlgItemText(IDC_REGEX_TEXT,	_T("[^/]*/([^/]+)/[^/]+/(?:[^/]+/)?\\d*\\s*-\\s*([^/]+)\\.(?:mp3|flac|ogg)"));
 		SetDlgItemText(IDC_ARTIST_INDEX_TEXT, _T("0"));
 		SetDlgItemText(IDC_TITLE_INDEX_TEXT, _T("1"));
