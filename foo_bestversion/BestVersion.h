@@ -25,4 +25,7 @@ float calculateTrackRating(const std::string& title, const metadb_handle_ptr& tr
 // all tracks will be analysed; try to cut the size of the list down before calling.
 metadb_handle_ptr getBestTrackByTitle(const std::string& title, const pfc::list_base_t<metadb_handle_ptr>& tracks);
 
+void findAllDeadItemsInAllPlaylists();
+void findDeadItemsInPlaylist(t_size playlist, pfc::list_base_t<metadb_handle_ptr>& track_list);
+
 } // namespace bestversion
