@@ -59,6 +59,28 @@ void replaceTrackInActivePlaylist(const metadb_handle_ptr& trackToReplace, const
 	}
 }
 
+void replaceTrackInAllPlaylists(const metadb_handle_ptr& trackToReplace, const metadb_handle_ptr& replacement)
+{
+	t_size index = 0;
+	static_api_ptr_t<playlist_manager> pm;
+
+	t_size playlist_count = pm->get_playlist_count();
+	for (t_size playlist_index = 0; playlist_index < playlist_count; playlist_index++)
+	{
+		if (pm->playlist_lock_is_present(playlist_index))
+		{
+			continue;
+		}
+		//findDeadItemsInPlaylist(playlist_index, dead_tracks);
+		while (pm->playlist_find_item(playlist_index, trackToReplace, index))
+		{
+			if (!pm->playlist_replace_item(playlist_index, index, replacement)) {
+				break;
+			}
+		}
+	}
+}
+
 //------------------------------------------------------------------------------
 
 } // namespace bestversion

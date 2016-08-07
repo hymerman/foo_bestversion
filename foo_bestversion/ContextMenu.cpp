@@ -24,7 +24,7 @@ const contextmenu_group_popup_factory bestVersionContextMenuGroupFactory(bestVer
 
 void generateArtistPlaylist(const pfc::list_base_const_t<metadb_handle_ptr>& tracks);
 void replaceWithBestVersion(const pfc::list_base_const_t<metadb_handle_ptr>& tracks);
-void replaceWithLibraryVersion(const pfc::list_base_const_t<metadb_handle_ptr>& tracks);
+void replaceWithLibraryVersion(const pfc::list_base_const_t<metadb_handle_ptr>& tracks, bool acrossAllPlaylists=false);
 
 //------------------------------------------------------------------------------
 
@@ -209,6 +209,7 @@ public:
 		{
 			ReplaceWithBestVersion = 0,
 			ReplaceWithLibraryVersion,
+			ReplaceWIthLibraryVersionAcrossAllPlaylists,
 			MAX
 		};
 	};
@@ -245,6 +246,12 @@ public:
 				break;
 			}
 
+			case Items::ReplaceWIthLibraryVersionAcrossAllPlaylists:
+			{
+				out = "Replace with same track in the library in all playlists";
+				break;
+			}
+
 			default:
 			{
 				uBugCheck();
@@ -269,8 +276,13 @@ public:
 
 			case Items::ReplaceWithLibraryVersion:
 			{
-				//replaceWithBestVersion(tracks);
 				replaceWithLibraryVersion(tracks);
+				break;
+			}
+
+			case Items::ReplaceWIthLibraryVersionAcrossAllPlaylists:
+			{
+				replaceWithLibraryVersion(tracks, true);
 				break;
 			}
 
@@ -324,6 +336,10 @@ public:
 		// {B9144A8F-8839-49D7-B2DA-C9CE9ED7517E}
 		static const GUID ReplaceWithLibraryVersionGUID = { 0xb9144a8f, 0x8839, 0x49d7,{ 0xb2, 0xda, 0xc9, 0xce, 0x9e, 0xd7, 0x51, 0x7e } };
 
+		// {1B059698-B4EC-4E1F-962A-6C749AC14985}
+		static const GUID ReplaceWithLibraryVersionAcrossAllPlaylistsGUID =	{ 0x1b059698, 0xb4ec, 0x4e1f,{ 0x96, 0x2a, 0x6c, 0x74, 0x9a, 0xc1, 0x49, 0x85 } };
+
+
 
 		switch(index)
 		{
@@ -335,6 +351,11 @@ public:
 			case Items::ReplaceWithLibraryVersion:
 			{
 				return ReplaceWithLibraryVersionGUID;
+			}
+
+			case Items::ReplaceWIthLibraryVersionAcrossAllPlaylists:
+			{
+				return ReplaceWithLibraryVersionAcrossAllPlaylistsGUID;
 			}
 
 			default:
@@ -361,6 +382,12 @@ public:
 			case Items::ReplaceWithLibraryVersion:
 			{
 				out = "Replace a track in a playlist with the same file from the library, if it exists.";
+				return true;
+			}
+
+			case Items::ReplaceWIthLibraryVersionAcrossAllPlaylists:
+			{
+				out = "Replace a track in a playlist with the same file from the library, if it exists, across all playlists.";
 				return true;
 			}
 
@@ -569,7 +596,7 @@ void replaceWithBestVersion(const pfc::list_base_const_t<metadb_handle_ptr>& tra
 
 //------------------------------------------------------------------------------
 
-void replaceWithLibraryVersion(const metadb_handle_ptr& track)
+void replaceWithLibraryVersion(const metadb_handle_ptr& track, bool acrossAllPlaylists)
 {
 	service_ptr_t<metadb_info_container> outInfo;
 	if (!track->get_async_info_ref(outInfo))
@@ -635,17 +662,21 @@ void replaceWithLibraryVersion(const metadb_handle_ptr& track)
 	{
 		console::printf("Couldn't find a library version of %s", title.c_str());
 	}
-	else
+	else if (!acrossAllPlaylists)
 	{
 		replaceTrackInActivePlaylist(track, bestVersionOfTrack);
 	}
+	else
+	{
+		replaceTrackInAllPlaylists(track, bestVersionOfTrack);
+	}
 }
 
-void replaceWithLibraryVersion(const pfc::list_base_const_t<metadb_handle_ptr>& tracks)
+void replaceWithLibraryVersion(const pfc::list_base_const_t<metadb_handle_ptr>& tracks, bool acrossAllPlaylists)
 {
 	for (t_size index = 0; index < tracks.get_count(); ++index)
 	{
-		replaceWithLibraryVersion(tracks[index]);
+		replaceWithLibraryVersion(tracks[index], acrossAllPlaylists);
 	}
 }
 
