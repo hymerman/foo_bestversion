@@ -23,6 +23,7 @@ const contextmenu_group_popup_factory bestVersionContextMenuGroupFactory(bestVer
 //------------------------------------------------------------------------------
 
 void generateArtistPlaylist(const pfc::list_base_const_t<metadb_handle_ptr>& tracks);
+void generateSimilarTracksPlaylist(const metadb_handle_ptr& track);
 void replaceWithBestVersion(const pfc::list_base_const_t<metadb_handle_ptr>& tracks);
 
 //------------------------------------------------------------------------------
@@ -39,6 +40,7 @@ public:
 		enum
 		{
 			GetArtistTopTracks = 0,
+			GetSimilarTracks = 1,
 			MAX
 		};
 	};
@@ -69,6 +71,12 @@ public:
 				break;
 			}
 
+			case Items::GetSimilarTracks:
+			{
+				out = "Get similar tracks";
+				break;
+			}
+
 			default:
 			{
 				uBugCheck();
@@ -91,6 +99,15 @@ public:
 				break;
 			}
 
+			case Items::GetSimilarTracks:
+			{
+				if(tracks.get_count() > 0)
+				{
+					generateSimilarTracksPlaylist(tracks.get_item(0));
+				}
+				break;
+			}
+
 			default:
 			{
 				uBugCheck();
@@ -103,7 +120,7 @@ public:
 		unsigned int			index,
 		metadb_handle_list_cref	tracks,
 		pfc::string_base&		out,
-		unsigned int&			/*displayflags*/,
+		unsigned int&			displayflags,
 		const GUID&				/*caller*/
 	)
 	{
@@ -140,6 +157,22 @@ public:
 				return true;
 			}
 
+			case Items::GetSimilarTracks:
+			{
+				if(tracks.get_count() == 0)
+				{
+					displayflags = FLAG_DISABLED_GRAYED;
+					get_item_name(index, out);
+				}
+				else
+				{
+					out = "Get tracks similar to ";
+					out.add_string(getTitle(tracks.get_item(0)).c_str());
+				}
+
+				return true;
+			}
+
 			default:
 			{
 				// Nothing wants to customise the display of the item; let the regular name be displayed.
@@ -157,11 +190,19 @@ public:
 		// {6D1AF128-2C33-4214-BAB2-6119D43D968F}
 		static const GUID GetArtistTopTracksGUID = { 0x6d1af128, 0x2c33, 0x4214, { 0xba, 0xb2, 0x61, 0x19, 0xd4, 0x3d, 0x96, 0x8f } };
 
+		// {B15EE137-81D2-4CAD-9411-5E9C6373A1DD}
+		static const GUID GetSimilarTracksGUID = { 0xb15ee137, 0x81d2, 0x4cad, { 0x94, 0x11, 0x5e, 0x9c, 0x63, 0x73, 0xa1, 0xdd } };
+
 		switch(index)
 		{
 			case Items::GetArtistTopTracks:
 			{
 				return GetArtistTopTracksGUID;
+			}
+
+			case Items::GetSimilarTracks:
+			{
+				return GetSimilarTracksGUID;
 			}
 
 			default:
@@ -182,6 +223,12 @@ public:
 			case Items::GetArtistTopTracks:
 			{
 				out = "Generate a playlist containing last.fm's top tracks for the selected artist.";
+				return true;
+			}
+
+			case Items::GetSimilarTracks:
+			{
+				out = "Generate a playlist containing last.fm's most similar tracks for the selected track.";
 				return true;
 			}
 
@@ -445,6 +492,97 @@ public:
 
 //------------------------------------------------------------------------------
 
+class SimilarTracksPlaylistGenerator : public threaded_process_callback
+{
+private:
+	std::string artist;
+	std::string track;
+	pfc::list_t<metadb_handle_ptr> library;
+	pfc::list_t<metadb_handle_ptr> tracks;
+	bool success;
+
+public:
+	SimilarTracksPlaylistGenerator(const std::string& artist_, const std::string& track_)
+		: artist(artist_)
+		, track(track_)
+		, success(false)
+	{
+	}
+
+	virtual void on_init(HWND /*p_wnd*/)
+	{
+		static_api_ptr_t<library_manager> lm;
+		lm->get_all_items(library);
+	}
+
+	virtual void run(threaded_process_status& p_status, abort_callback& p_abort)
+	{
+		try
+		{
+			console::printf("Downloading similar tracks feed from Last.Fm... for %s by %s", track.c_str(), artist.c_str());
+
+			p_status.set_item("Downloading feed from Last.Fm...");
+			p_status.set_progress_float(0.0f);
+
+			const auto similarTracks = bestversion::getTrackSimilarTracks(
+				artist,
+				track,
+				[](const std::string& message){ console::print(message.c_str()); },
+				p_abort
+			);
+
+			p_abort.check();
+			p_status.set_item("Searching library for best versions of tracks...");
+			p_status.set_progress_float(0.5f);
+
+			for(size_t similarTrackIndex = 0; similarTrackIndex < similarTracks.size(); ++similarTrackIndex)
+			{
+				const auto& similarTrack = similarTracks[similarTrackIndex];
+
+				p_abort.check();
+				p_status.set_progress_secondary(similarTrackIndex, similarTracks.size());
+
+				// Copy the library then filter it to tracks with this title and artist.
+				auto subsetOfLibrary = library;
+				filterTracksByArtist(similarTrack.artist, subsetOfLibrary);
+				filterTracksByCloseTitle(similarTrack.track, subsetOfLibrary);
+
+				// Pick the best version of all these tracks and add it to the list if found.
+				metadb_handle_ptr similarTrackInLibrary = getBestTrackByTitle(similarTrack.track, subsetOfLibrary);
+
+				if(similarTrackInLibrary != nullptr)
+				{
+					tracks.add_item(similarTrackInLibrary);
+				}
+			}
+
+			if(tracks.get_count() == 0)
+			{
+				throw pfc::exception("Did not find enough tracks to make a playlist");
+			}
+
+			success = true;
+			p_abort.check();
+		}
+		catch(exception_aborted&)
+		{
+			success = false;
+		}
+	}
+
+	virtual void on_done(HWND /*p_wnd*/, bool /*p_was_aborted*/)
+	{
+		if (!success)
+		{
+			return;
+		}
+
+		generatePlaylistFromTracks(tracks, "Tracks similar to " + track);
+	}
+};
+
+//------------------------------------------------------------------------------
+
 void generateArtistPlaylist(const pfc::list_base_const_t<metadb_handle_ptr>& tracks)
 {
 	const std::string mainArtist = getMainArtist(tracks);
@@ -473,6 +611,43 @@ void generateArtistPlaylist(const pfc::list_base_const_t<metadb_handle_ptr>& tra
 	{
 		console::error("no Artist Information found");
 	}
+}
+
+//------------------------------------------------------------------------------
+
+void generateSimilarTracksPlaylist(const metadb_handle_ptr& track)
+{
+	const auto artist = getArtist(track);
+	const auto trackTitle = getTitle(track);
+
+	if(trackTitle.empty())
+	{
+		console::error("Track doesn't have title");
+		return;
+	}
+
+	if(artist.empty())
+	{
+		console::error("Track doesn't have artist or album artist");
+		return;
+	}
+
+	const auto title = std::string("Generating similar tracks playlist for ") + trackTitle + " by " + artist;
+
+	console::print(title.c_str());
+
+	// New this up since it's going to live on another thread, which will delete it when it's ready.
+	auto generator = new service_impl_t<SimilarTracksPlaylistGenerator>(artist, trackTitle);
+
+	static_api_ptr_t<threaded_process> tp;
+
+	tp->run_modeless(
+		generator,
+		tp->flag_show_abort | tp->flag_show_item | tp->flag_show_progress_dual,
+		core_api::get_main_window(),
+		title.c_str(),
+		pfc_infinite
+	);
 }
 
 //------------------------------------------------------------------------------

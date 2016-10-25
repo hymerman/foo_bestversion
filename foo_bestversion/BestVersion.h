@@ -7,6 +7,8 @@
 namespace bestversion {
 
 std::string getMainArtist(metadb_handle_list_cref tracks);
+std::string getArtist(metadb_handle_ptr track);
+std::string getTitle(metadb_handle_ptr track);
 
 bool isTrackByArtist(const std::string& artist, const metadb_handle_ptr& track);
 

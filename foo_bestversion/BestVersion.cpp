@@ -53,6 +53,53 @@ std::string getMainArtist(metadb_handle_list_cref tracks)
 
 //------------------------------------------------------------------------------
 
+std::string getArtist(metadb_handle_ptr track)
+{
+	service_ptr_t<metadb_info_container> outInfo;
+	if(!track->get_async_info_ref(outInfo))
+	{
+		return "";
+	}
+
+	const file_info& fileInfo = outInfo->info();
+	const bool has_artist_tag = fileInfo.meta_exists("artist");
+	const bool has_album_artist_tag = fileInfo.meta_exists("album artist");
+
+	if(!(has_artist_tag || has_album_artist_tag))
+	{
+		return "";
+	}
+
+	const char* artistName = has_artist_tag ? fileInfo.meta_get("artist", 0) : fileInfo.meta_get("album artist", 0);
+
+	return artistName;
+}
+
+//------------------------------------------------------------------------------
+
+std::string getTitle(metadb_handle_ptr track)
+{
+	service_ptr_t<metadb_info_container> outInfo;
+	if(!track->get_async_info_ref(outInfo))
+	{
+		return "";
+	}
+
+	const file_info& fileInfo = outInfo->info();
+	const bool has_title_tag = fileInfo.meta_exists("title");
+
+	if(!has_title_tag)
+	{
+		return "";
+	}
+
+	const char* title = fileInfo.meta_get("title", 0);
+
+	return title;
+}
+
+//------------------------------------------------------------------------------
+
 inline bool isTrackByArtist(const std::string& artist, const metadb_handle_ptr& track)
 {
 	// todo: ignore slight differences, e.g. in punctuation
