@@ -385,32 +385,34 @@ public:
 
 			p_status.set_item("Downloading chart listing from Last.Fm...");
 			p_status.set_progress_float(0.0f);
-			p_status.force_update();
 
-			const bestversion::ArtistChart trackList = bestversion::getArtistChart(
+			const bestversion::ArtistChart artistChart = bestversion::getArtistChart(
 				artist,
 				[](const std::string& message){ console::print(message.c_str()); },
 				p_abort
 			);
 
 			p_abort.check();
-			p_status.set_item("Generating Playlist...");
+			p_status.set_item("Searching library for best versions of tracks...");
 			p_status.set_progress_float(0.5f);
-			p_status.force_update();
 
 			// Just look at one artist.
 			filterTracksByArtist(artist, library);
 
-			for(auto iter = trackList.begin(); iter != trackList.end(); iter++ )
+			for(size_t artistChartEntryIndex = 0; artistChartEntryIndex < artistChart.size(); ++artistChartEntryIndex)
 			{
+				const auto& artistChartEntry = artistChart[artistChartEntryIndex];
+
+				p_status.set_progress_secondary(artistChartEntryIndex, artistChart.size());
+
 				// Copy the library then filter it to tracks with this title.
 				auto subsetOfLibrary = library;
-				filterTracksByCloseTitle(iter->second, subsetOfLibrary);
+				filterTracksByCloseTitle(artistChartEntry.second, subsetOfLibrary);
 
 				// Pick the best version of all these tracks and add it to the list if found.
-				metadb_handle_ptr track = getBestTrackByTitle(iter->second, subsetOfLibrary);
+				metadb_handle_ptr track = getBestTrackByTitle(artistChartEntry.second, subsetOfLibrary);
 
-				if(track != 0)
+				if(track != nullptr)
 				{
 					tracks.add_item(track);
 				}
@@ -461,7 +463,7 @@ void generateArtistPlaylist(const pfc::list_base_const_t<metadb_handle_ptr>& tra
 
 		tp->run_modeless(
 			generator,
-			tp->flag_show_abort | tp->flag_show_item,
+			tp->flag_show_abort | tp->flag_show_item | tp->flag_show_progress_dual,
 			core_api::get_main_window(),
 			title.c_str(),
 			pfc_infinite
