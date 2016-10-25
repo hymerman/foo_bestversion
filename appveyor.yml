@@ -14,7 +14,7 @@ after_build:
 
 artifacts:
   # Capture the component and PDB.
-  - path: foo_bestversion/Release/foo_bestversion.fb2k-component
+  - path: foo_bestversion.fb2k-component
     name: foo_bestversion.fb2k-component
   - path: foo_bestversion/Release/foo_bestversion.pdb
     name: foo_bestversion.pdb
