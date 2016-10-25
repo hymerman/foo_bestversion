@@ -12,11 +12,14 @@ namespace bestversion {
 
 std::string getMainArtist(metadb_handle_list_cref tracks)
 {
+	// Don't look at too many tracks - this method should be quick but won't be if we don't limit ourselves.
+	static const t_size maxNumberOfTracksToConsider = 100;
+
 	// Keep track of the number of each artist name we encounter.
 	std::map<const char*, t_size> artists;
 
 	// For each track, increment the number of occurrences of its artist.
-	for(t_size i = 0; i < tracks.get_count(); i++)
+	for(t_size i = 0; i < tracks.get_count() && i < maxNumberOfTracksToConsider; i++)
 	{
 		service_ptr_t<metadb_info_container> outInfo;
 		if(tracks[i]->get_async_info_ref(outInfo))
