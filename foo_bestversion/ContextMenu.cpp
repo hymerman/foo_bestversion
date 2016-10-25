@@ -24,6 +24,7 @@ const contextmenu_group_popup_factory bestVersionContextMenuGroupFactory(bestVer
 
 void generateArtistPlaylist(const pfc::list_base_const_t<metadb_handle_ptr>& tracks);
 void generateSimilarTracksPlaylist(const metadb_handle_ptr& track);
+metadb_handle_ptr bestVersionOf(const metadb_handle_ptr& track, const pfc::list_t<metadb_handle_ptr>& library);
 void replaceWithBestVersion(const pfc::list_base_const_t<metadb_handle_ptr>& tracks);
 
 //------------------------------------------------------------------------------
@@ -583,6 +584,76 @@ public:
 
 //------------------------------------------------------------------------------
 
+class ReplaceWithBestVersionProcess : public threaded_process_callback
+{
+private:
+	pfc::list_t<metadb_handle_ptr> library;
+	pfc::list_t<metadb_handle_ptr> tracks;
+	pfc::list_t<metadb_handle_ptr> replacements;
+	bool success;
+
+public:
+	ReplaceWithBestVersionProcess(const pfc::list_base_const_t<metadb_handle_ptr>& tracks_)
+		: success(false)
+	{
+		// Take a copy of the input tracks list as it may be destroyed in another thread.
+		tracks = tracks_;
+		replacements.prealloc(tracks.get_size());
+	}
+
+	virtual void on_init(HWND /*p_wnd*/)
+	{
+		static_api_ptr_t<library_manager> lm;
+		lm->get_all_items(library);
+	}
+
+	virtual void run(threaded_process_status& p_status, abort_callback& p_abort)
+	{
+		try
+		{
+			for(t_size index = 0; index < tracks.get_count(); ++index)
+			{
+				const auto& track = tracks[index];
+				p_abort.check();
+				p_status.set_item(getTitle(track).c_str());
+				p_status.set_progress(index, tracks.get_count());
+
+				const auto& replacement = bestVersionOf(track, library);
+
+				replacements.add_item(replacement);
+			}
+
+			success = true;
+			p_abort.check();
+		}
+		catch(exception_aborted&)
+		{
+			success = false;
+		}
+	}
+
+	virtual void on_done(HWND /*p_wnd*/, bool /*p_was_aborted*/)
+	{
+		if (!success)
+		{
+			return;
+		}
+
+		static_api_ptr_t<playlist_manager> pm;
+		pm->activeplaylist_undo_backup();
+
+		for(t_size index = 0; index < tracks.get_count(); ++index)
+		{
+			if(replacements[index] != nullptr)
+			{
+				replaceTrackInActivePlaylist(tracks[index], replacements[index]);
+			}
+		}
+	}
+};
+
+//------------------------------------------------------------------------------
+
 void generateArtistPlaylist(const pfc::list_base_const_t<metadb_handle_ptr>& tracks)
 {
 	const std::string mainArtist = getMainArtist(tracks);
@@ -620,15 +691,9 @@ void generateSimilarTracksPlaylist(const metadb_handle_ptr& track)
 	const auto artist = getArtist(track);
 	const auto trackTitle = getTitle(track);
 
-	if(trackTitle.empty())
+	if(artist.empty() || trackTitle.empty())
 	{
-		console::error("Track doesn't have title");
-		return;
-	}
-
-	if(artist.empty())
-	{
-		console::error("Track doesn't have artist or album artist");
+		console::printf("File has empty artist or track tag: %s", track->get_path());
 		return;
 	}
 
@@ -652,66 +717,51 @@ void generateSimilarTracksPlaylist(const metadb_handle_ptr& track)
 
 //------------------------------------------------------------------------------
 
-void replaceWithBestVersion(const metadb_handle_ptr& track)
+metadb_handle_ptr bestVersionOf(const metadb_handle_ptr& track, const pfc::list_t<metadb_handle_ptr>& library)
 {
-	service_ptr_t<metadb_info_container> outInfo;
-	if(!track->get_async_info_ref(outInfo))
-	{
-		console::printf("Couldn't get file info for file %s", track->get_path());
-		return;
-	}
+	const auto artist = getArtist(track);
+	const auto trackTitle = getTitle(track);
 
-	const file_info& fileInfo = outInfo->info();
-
-	if(!fileInfo.meta_exists("title"))
-	{
-		console::printf("File is missing track tag: %s", track->get_path());
-		return;
-	}
-
-	const bool has_artist_tag = fileInfo.meta_exists("artist");
-	const bool has_album_artist_tag = fileInfo.meta_exists("album artist");
-	if(!has_artist_tag && !has_album_artist_tag)
-	{
-		console::printf("File is missing artist and album artist tags: %s", track->get_path());
-		return;
-	}
-
-	const std::string artist = has_artist_tag ? fileInfo.meta_get("artist", 0) : fileInfo.meta_get("album artist", 0);
-	const std::string title = fileInfo.meta_get("title", 0);
-
-	if(artist == "" || title == "")
+	if(artist.empty() || trackTitle.empty())
 	{
 		console::printf("File has empty artist or track tag: %s", track->get_path());
-		return;
+		return metadb_handle_ptr();
 	}
 
-	pfc::list_t<metadb_handle_ptr> library;
+	auto subsetOfLibrary = library;
+	filterTracksByArtist(artist, subsetOfLibrary);
+	filterTracksByCloseTitle(trackTitle, subsetOfLibrary);
 
-	static_api_ptr_t<library_manager> lm;
-	lm->get_all_items(library);
+	const auto& bestVersionOfTrack = getBestTrackByTitle(trackTitle, subsetOfLibrary);
 
-	filterTracksByArtist(artist, library);
-	filterTracksByCloseTitle(title, library);
-
-	const metadb_handle_ptr bestVersionOfTrack = getBestTrackByTitle(title, library);
-
-	if(bestVersionOfTrack == 0)
+	if(bestVersionOfTrack == nullptr)
 	{
-		console::printf("Couldn't find a better version of %s", title.c_str());
+		console::printf("Couldn't find a better version of %s", trackTitle.c_str());
 	}
-	else
-	{
-		replaceTrackInActivePlaylist(track, bestVersionOfTrack);
-	}
+
+	return bestVersionOfTrack;
 }
+
+//------------------------------------------------------------------------------
 
 void replaceWithBestVersion(const pfc::list_base_const_t<metadb_handle_ptr>& tracks)
 {
-	for(t_size index = 0; index < tracks.get_count(); ++index)
-	{
-		replaceWithBestVersion(tracks[index]);
-	}
+	const auto title = std::string("Replacing tracks with their best version");
+
+	console::print(title.c_str());
+
+	// New this up since it's going to live on another thread, which will delete it when it's ready.
+	auto generator = new service_impl_t<ReplaceWithBestVersionProcess>(tracks);
+
+	static_api_ptr_t<threaded_process> tp;
+
+	tp->run_modeless(
+		generator,
+		tp->flag_show_abort | tp->flag_show_item | tp->flag_show_progress,
+		core_api::get_main_window(),
+		title.c_str(),
+		pfc_infinite
+	);
 }
 
 }
