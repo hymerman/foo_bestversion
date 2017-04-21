@@ -103,6 +103,7 @@
     <ClCompile Include="Component.cpp" />
     <ClCompile Include="ContextMenu.cpp" />
     <ClCompile Include="LastFm.cpp" />
+    <ClCompile Include="MainMenu.cpp" />
     <ClCompile Include="PlaylistGenerator.cpp" />
   </ItemGroup>
   <ItemGroup>

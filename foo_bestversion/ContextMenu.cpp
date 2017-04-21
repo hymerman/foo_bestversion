@@ -26,6 +26,7 @@ void generateArtistPlaylist(const pfc::list_base_const_t<metadb_handle_ptr>& tra
 void generateSimilarTracksPlaylist(const metadb_handle_ptr& track);
 metadb_handle_ptr bestVersionOf(const metadb_handle_ptr& track, const pfc::list_t<metadb_handle_ptr>& library);
 void replaceWithBestVersion(const pfc::list_base_const_t<metadb_handle_ptr>& tracks);
+void replaceWithLibraryVersion(const pfc::list_base_const_t<metadb_handle_ptr>& tracks, bool acrossAllPlaylists=false);
 
 //------------------------------------------------------------------------------
 
@@ -255,6 +256,8 @@ public:
 		enum
 		{
 			ReplaceWithBestVersion = 0,
+			ReplaceWithLibraryVersion,
+			ReplaceWIthLibraryVersionAcrossAllPlaylists,
 			MAX
 		};
 	};
@@ -285,6 +288,18 @@ public:
 				break;
 			}
 
+			case Items::ReplaceWithLibraryVersion:
+			{
+				out = "Replace with same track in the library";
+				break;
+			}
+
+			case Items::ReplaceWIthLibraryVersionAcrossAllPlaylists:
+			{
+				out = "Replace with same track in the library in all playlists";
+				break;
+			}
+
 			default:
 			{
 				uBugCheck();
@@ -304,6 +319,18 @@ public:
 			case Items::ReplaceWithBestVersion:
 			{
 				replaceWithBestVersion(tracks);
+				break;
+			}
+
+			case Items::ReplaceWithLibraryVersion:
+			{
+				replaceWithLibraryVersion(tracks);
+				break;
+			}
+
+			case Items::ReplaceWIthLibraryVersionAcrossAllPlaylists:
+			{
+				replaceWithLibraryVersion(tracks, true);
 				break;
 			}
 
@@ -354,11 +381,29 @@ public:
 		// {4CAA2F50-2818-4DE5-B682-FB36483C9A5E}
 		static const GUID ReplaceWithBestVersionGUID = { 0x4caa2f50, 0x2818, 0x4de5, { 0xb6, 0x82, 0xfb, 0x36, 0x48, 0x3c, 0x9a, 0x5e } };
 
+		// {B9144A8F-8839-49D7-B2DA-C9CE9ED7517E}
+		static const GUID ReplaceWithLibraryVersionGUID = { 0xb9144a8f, 0x8839, 0x49d7,{ 0xb2, 0xda, 0xc9, 0xce, 0x9e, 0xd7, 0x51, 0x7e } };
+
+		// {1B059698-B4EC-4E1F-962A-6C749AC14985}
+		static const GUID ReplaceWithLibraryVersionAcrossAllPlaylistsGUID =	{ 0x1b059698, 0xb4ec, 0x4e1f,{ 0x96, 0x2a, 0x6c, 0x74, 0x9a, 0xc1, 0x49, 0x85 } };
+
+
+
 		switch(index)
 		{
 			case Items::ReplaceWithBestVersion:
 			{
 				return ReplaceWithBestVersionGUID;
+			}
+
+			case Items::ReplaceWithLibraryVersion:
+			{
+				return ReplaceWithLibraryVersionGUID;
+			}
+
+			case Items::ReplaceWIthLibraryVersionAcrossAllPlaylists:
+			{
+				return ReplaceWithLibraryVersionAcrossAllPlaylistsGUID;
 			}
 
 			default:
@@ -379,6 +424,18 @@ public:
 			case Items::ReplaceWithBestVersion:
 			{
 				out = "Replace a track in a playlist with a better version of the track from the library.";
+				return true;
+			}
+
+			case Items::ReplaceWithLibraryVersion:
+			{
+				out = "Replace a track in a playlist with the same file from the library, if it exists.";
+				return true;
+			}
+
+			case Items::ReplaceWIthLibraryVersionAcrossAllPlaylists:
+			{
+				out = "Replace a track in a playlist with the same file from the library, if it exists, across all playlists.";
 				return true;
 			}
 
@@ -762,6 +819,92 @@ void replaceWithBestVersion(const pfc::list_base_const_t<metadb_handle_ptr>& tra
 		title.c_str(),
 		pfc_infinite
 	);
+}
+
+//------------------------------------------------------------------------------
+
+void replaceWithLibraryVersion(const metadb_handle_ptr& track, bool acrossAllPlaylists)
+{
+	service_ptr_t<metadb_info_container> outInfo;
+	if (!track->get_async_info_ref(outInfo))
+	{
+		console::printf("Couldn't get file info for file %s", track->get_path());
+		return;
+	}
+
+	const file_info& fileInfo = outInfo->info();
+
+	if (!fileInfo.meta_exists("title"))
+	{
+		console::printf("File is missing title tag: %s", track->get_path());
+		return;
+	}
+
+	if (!fileInfo.meta_exists("tracknumber"))
+	{
+		console::printf("File is missing track number tag: %s", track->get_path());
+		return;
+	}
+
+	if (!fileInfo.meta_exists("album"))
+	{
+		console::printf("File is missing album tag: %s", track->get_path());
+		return;
+	}
+
+	const bool has_artist_tag = fileInfo.meta_exists("artist");
+	const bool has_album_artist_tag = fileInfo.meta_exists("album artist");
+	if (!has_artist_tag && !has_album_artist_tag)
+	{
+		console::printf("File is missing artist and album artist tags: %s", track->get_path());
+		return;
+	}
+
+	const std::string artist = has_artist_tag ? fileInfo.meta_get("artist", 0) : fileInfo.meta_get("album artist", 0);
+	const std::string title = fileInfo.meta_get("title", 0);
+	const std::string album = fileInfo.meta_get("album", 0);
+	const std::string track_n = fileInfo.meta_get("tracknumber", 0);
+
+
+	if (artist == "" || title == "" || album == "" || track_n == "")
+	{
+		console::printf("File has empty artist or title or track or album tag: %s", track->get_path());
+		return;
+	}
+
+	pfc::list_t<metadb_handle_ptr> library;
+
+	static_api_ptr_t<library_manager> lm;
+	lm->get_all_items(library);
+
+	filterTracksByArtist(artist, library);
+	filterTracksByCloseTitle(title, library, true);
+	filterTracksByTagField("album", album, library);
+	filterTracksByTagField("tracknumber", track_n, library);
+
+
+	const metadb_handle_ptr bestVersionOfTrack = getBestTrackByTitle(title, library);
+
+	if (bestVersionOfTrack == 0)
+	{
+		console::printf("Couldn't find a library version of %s", title.c_str());
+	}
+	else if (!acrossAllPlaylists)
+	{
+		replaceTrackInActivePlaylist(track, bestVersionOfTrack);
+	}
+	else
+	{
+		replaceTrackInAllPlaylists(track, bestVersionOfTrack);
+	}
+}
+
+void replaceWithLibraryVersion(const pfc::list_base_const_t<metadb_handle_ptr>& tracks, bool acrossAllPlaylists)
+{
+	for (t_size index = 0; index < tracks.get_count(); ++index)
+	{
+		replaceWithLibraryVersion(tracks[index], acrossAllPlaylists);
+	}
 }
 
 }
